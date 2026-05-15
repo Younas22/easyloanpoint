@@ -7,12 +7,15 @@ use App\Http\Requests\Admin\StoreAssignmentRequest;
 use App\Models\Customer;
 use App\Models\CustomerAssignment;
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class CustomerAssignmentController extends Controller
 {
+    public function __construct(private NotificationService $notifications) {}
+
     public function index(Request $request): View
     {
         $hrUsers = User::where('role', 'hr')
@@ -68,6 +71,8 @@ class CustomerAssignmentController extends Controller
         $customer->loans()
             ->whereIn('status', ['pending', 'under_review'])
             ->update(['assigned_hr_id' => $hr->id]);
+
+        $this->notifications->notifyCustomerAssigned($customer, $hr, auth()->user());
 
         return response()->json([
             'status'  => true,

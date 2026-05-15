@@ -8,12 +8,13 @@ use App\Http\Controllers\Admin\CustomerAssignmentController;
 use App\Http\Controllers\Admin\LoanController as AdminLoanController;
 use App\Http\Controllers\HR\DashboardController as HRDashboard;
 use App\Http\Controllers\HR\LoanController as HRLoanController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
-// ─── Redirect root ────────────────────────────────────────────────────────────
-Route::get('/', function () {
-    return redirect()->route('login');
-});
+// ─── Public homepage ──────────────────────────────────────────────────────────
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/download/app', [HomeController::class, 'downloadApk'])->name('download.apk');
 
 // ─── Auth routes (guest only) ─────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
@@ -24,6 +25,19 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [LoginController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
+
+// ─── Notifications (shared: admin + HR) ──────────────────────────────────────
+Route::middleware('auth')
+    ->prefix('notifications')
+    ->name('notifications.')
+    ->group(function () {
+        Route::get('/',                           [NotificationController::class, 'index'])->name('index');
+        Route::get('/dropdown',                   [NotificationController::class, 'dropdown'])->name('dropdown');
+        Route::get('/unread-count',               [NotificationController::class, 'unreadCount'])->name('unread-count');
+        Route::patch('/mark-all-read',            [NotificationController::class, 'markAllRead'])->name('mark-all-read');
+        Route::patch('/{notification}/read',      [NotificationController::class, 'markRead'])->name('mark-read');
+        Route::delete('/{notification}',          [NotificationController::class, 'destroy'])->name('destroy');
+    });
 
 // ─── Admin routes ─────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'admin'])

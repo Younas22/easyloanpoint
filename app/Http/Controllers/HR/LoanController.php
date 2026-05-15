@@ -5,11 +5,14 @@ namespace App\Http\Controllers\HR;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateLoanStatusRequest;
 use App\Models\Loan;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class LoanController extends Controller
 {
+    public function __construct(private NotificationService $notifications) {}
+
     private function baseQuery(): \Illuminate\Database\Eloquent\Builder
     {
         return Loan::with(['customer', 'assignedHR'])
@@ -106,6 +109,13 @@ class LoanController extends Controller
             ]);
         });
 
+        $this->notifications->notifyLoanStatusChanged(
+            $loan->load('customer'),
+            $fromStatus,
+            $toStatus,
+            $request->remarks
+        );
+
         return back()->with('success', "Loan status updated to " . $loan->fresh()->status_label . ".");
     }
 
@@ -128,6 +138,8 @@ class LoanController extends Controller
             'verified_by' => auth()->id(),
             'verified_at' => now(),
         ]);
+
+        $this->notifications->notifyDocumentVerified($doc->fresh());
 
         return back()->with('success', 'Document updated to ' . ucfirst($request->status) . '.');
     }

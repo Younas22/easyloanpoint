@@ -1,0 +1,4 @@
+# Add this line to: C:\Windows\System32\drivers\etc\hosts
+# (Open Notepad as Administrator, then open that file)
+
+127.0.0.1   easyloanpoint.local

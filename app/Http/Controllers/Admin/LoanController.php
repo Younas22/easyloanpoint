@@ -10,11 +10,14 @@ use App\Models\Customer;
 use App\Models\Loan;
 use App\Models\LoanDocument;
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class LoanController extends Controller
 {
+    public function __construct(private NotificationService $notifications) {}
+
     public function index(Request $request)
     {
         $query = Loan::with(['customer', 'assignedHR'])->latest('applied_at');
@@ -71,6 +74,9 @@ class LoanController extends Controller
     public function store(StoreLoanRequest $request)
     {
         $loan = Loan::create(array_merge($request->validated(), ['applied_at' => now()]));
+
+        $loan->load('customer');
+        $this->notifications->notifyNewLoanApplication($loan);
 
         return redirect()
             ->route('admin.loans.show', $loan)
@@ -136,6 +142,13 @@ class LoanController extends Controller
             ]);
         });
 
+        $this->notifications->notifyLoanStatusChanged(
+            $loan->load('customer'),
+            $fromStatus,
+            $toStatus,
+            $request->remarks
+        );
+
         return back()->with('success', "Loan status updated to " . $loan->fresh()->status_label . ".");
     }
 
@@ -152,6 +165,8 @@ class LoanController extends Controller
             'verified_by' => auth()->id(),
             'verified_at' => now(),
         ]);
+
+        $this->notifications->notifyDocumentVerified($document->fresh());
 
         return back()->with('success', 'Document status updated to ' . ucfirst($request->status) . '.');
     }

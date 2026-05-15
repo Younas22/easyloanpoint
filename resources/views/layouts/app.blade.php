@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') — EasyLoanPoint</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+<link rel="stylesheet" href="{{ asset('public/build/assets/app-CM0Fw6HD.css') }}">
+    <script src="{{ asset('public/build/assets/app-Baybx7-I.js') }}" defer></script>
 </head>
 <body class="h-full bg-gray-50 font-sans antialiased">
 

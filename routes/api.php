@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Customer\LoanController;
+use App\Http\Controllers\Api\Customer\NotificationController as ApiNotificationController;
 use App\Http\Controllers\Api\Customer\ProfileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -61,5 +62,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/loans/{loanId}/documents/{type}', [LoanController::class, 'uploadDocument'])
              ->where('type', 'aadhaar|pan|selfie')
              ->name('loans.docs.upload');
+
+        // Notifications
+        Route::prefix('notifications')->name('notifications.')->group(function () {
+            Route::get('/',              [ApiNotificationController::class, 'index'])->name('index');
+            Route::get('/unread-count',  [ApiNotificationController::class, 'unreadCount'])->name('unread-count');
+            Route::patch('/mark-all-read', [ApiNotificationController::class, 'markAllRead'])->name('mark-all-read');
+            Route::patch('/{id}/read',   [ApiNotificationController::class, 'markRead'])->name('mark-read');
+        });
     });
 });
