@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str;
+use Illuminate\Support\Str; // kept for potential future use
 
 class Loan extends Model
 {
@@ -58,7 +58,37 @@ class Loan extends Model
 
     public function statusHistories(): HasMany
     {
-        return $this->hasMany(LoanStatusHistory::class);
+        return $this->hasMany(LoanStatusHistory::class)->latest();
+    }
+
+    public function documents(): HasMany
+    {
+        return $this->hasMany(LoanDocument::class);
+    }
+
+    public function getEmiAmountAttribute(): ?float
+    {
+        if (!$this->amount_approved || !$this->interest_rate || !$this->tenure_months) {
+            return null;
+        }
+        $r = $this->interest_rate / 12 / 100;
+        $n = $this->tenure_months;
+        $p = (float) $this->amount_approved;
+        return $r > 0
+            ? round($p * $r * pow(1 + $r, $n) / (pow(1 + $r, $n) - 1), 2)
+            : round($p / $n, 2);
+    }
+
+    public function getTotalPayableAttribute(): ?float
+    {
+        $emi = $this->emi_amount;
+        return $emi ? round($emi * $this->tenure_months, 2) : null;
+    }
+
+    public function getTotalInterestAttribute(): ?float
+    {
+        $total = $this->total_payable;
+        return $total ? round($total - (float) $this->amount_approved, 2) : null;
     }
 
     public function getStatusBadgeClassAttribute(): string

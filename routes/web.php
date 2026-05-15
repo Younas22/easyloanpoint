@@ -4,7 +4,9 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Admin\HrController;
 use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\LoanController as AdminLoanController;
 use App\Http\Controllers\HR\DashboardController as HRDashboard;
+use App\Http\Controllers\HR\LoanController as HRLoanController;
 use Illuminate\Support\Facades\Route;
 
 // ─── Redirect root ────────────────────────────────────────────────────────────
@@ -39,6 +41,12 @@ Route::middleware(['auth', 'admin'])
         Route::patch('customers/{customer}/toggle-status', [CustomerController::class, 'toggleStatus'])->name('customers.toggle-status');
         Route::post('customers/{customer}/assign-hr',      [CustomerController::class, 'assignHr'])->name('customers.assign-hr');
         Route::patch('customers/{customer}/note',          [CustomerController::class, 'updateNote'])->name('customers.update-note');
+
+        // Loan Management
+        Route::resource('loans', AdminLoanController::class);
+        Route::patch('loans/{loan}/status',                          [AdminLoanController::class, 'updateStatus'])->name('loans.update-status');
+        Route::post('loans/{loan}/documents',                        [AdminLoanController::class, 'uploadDocument'])->name('loans.upload-document');
+        Route::patch('loans/{loan}/documents/{document}/verify',     [AdminLoanController::class, 'verifyDocument'])->name('loans.verify-document');
     });
 
 // ─── HR routes ────────────────────────────────────────────────────────────────
@@ -47,4 +55,10 @@ Route::middleware(['auth', 'hr'])
     ->name('hr.')
     ->group(function () {
         Route::get('/dashboard', [HRDashboard::class, 'index'])->name('dashboard');
+
+        // Loan Management (HR sees only assigned loans)
+        Route::get('/loans',                             [HRLoanController::class, 'index'])->name('loans.index');
+        Route::get('/loans/{loan}',                      [HRLoanController::class, 'show'])->name('loans.show');
+        Route::patch('/loans/{loan}/status',             [HRLoanController::class, 'updateStatus'])->name('loans.update-status');
+        Route::patch('/loans/{loan}/documents/verify',   [HRLoanController::class, 'verifyDocument'])->name('loans.verify-document');
     });

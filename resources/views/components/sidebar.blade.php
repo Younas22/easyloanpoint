@@ -4,21 +4,21 @@
     $current  = request()->route()->getName();
 
     $adminNav = [
-        ['route' => 'admin.dashboard', 'label' => 'Dashboard',        'icon' => 'grid'],
-        ['route' => 'admin.hr.index',   'label' => 'HR Management',     'icon' => 'users'],
-        ['route' => 'admin.customers.index', 'label' => 'Customers',    'icon' => 'user-group'],
-        ['route' => 'admin.dashboard', 'label' => 'Loan Applications', 'icon' => 'document'],
-        ['route' => 'admin.dashboard', 'label' => 'Assignments',       'icon' => 'link'],
-        ['route' => 'admin.dashboard', 'label' => 'Reports',           'icon' => 'chart'],
-        ['route' => 'admin.dashboard', 'label' => 'Settings',          'icon' => 'cog'],
-        ['route' => 'admin.dashboard', 'label' => 'Activity Logs',     'icon' => 'list'],
+        ['route' => 'admin.dashboard',        'label' => 'Dashboard',        'icon' => 'grid',       'prefix' => 'admin.dashboard'],
+        ['route' => 'admin.hr.index',         'label' => 'HR Management',    'icon' => 'users',      'prefix' => 'admin.hr'],
+        ['route' => 'admin.customers.index',  'label' => 'Customers',        'icon' => 'user-group', 'prefix' => 'admin.customers'],
+        ['route' => 'admin.loans.index',      'label' => 'Loan Applications','icon' => 'document',   'prefix' => 'admin.loans'],
+        ['route' => 'admin.dashboard',        'label' => 'Assignments',      'icon' => 'link',       'prefix' => 'admin.assignments'],
+        ['route' => 'admin.dashboard',        'label' => 'Reports',          'icon' => 'chart',      'prefix' => 'admin.reports'],
+        ['route' => 'admin.dashboard',        'label' => 'Settings',         'icon' => 'cog',        'prefix' => 'admin.settings'],
+        ['route' => 'admin.dashboard',        'label' => 'Activity Logs',    'icon' => 'list',       'prefix' => 'admin.logs'],
     ];
 
     $hrNav = [
-        ['route' => 'hr.dashboard', 'label' => 'Dashboard',        'icon' => 'grid'],
-        ['route' => 'hr.dashboard', 'label' => 'My Customers',     'icon' => 'user-group'],
-        ['route' => 'hr.dashboard', 'label' => 'Loan Applications','icon' => 'document'],
-        ['route' => 'hr.dashboard', 'label' => 'Profile',          'icon' => 'user'],
+        ['route' => 'hr.dashboard',    'label' => 'Dashboard',        'icon' => 'grid',       'prefix' => 'hr.dashboard'],
+        ['route' => 'hr.dashboard',    'label' => 'My Customers',     'icon' => 'user-group', 'prefix' => 'hr.customers'],
+        ['route' => 'hr.loans.index',  'label' => 'Loan Applications','icon' => 'document',   'prefix' => 'hr.loans'],
+        ['route' => 'hr.dashboard',    'label' => 'Profile',          'icon' => 'user',       'prefix' => 'hr.profile'],
     ];
 
     $navItems = $isAdmin ? $adminNav : $hrNav;
@@ -57,7 +57,7 @@
         <ul class="space-y-0.5">
             @foreach($navItems as $item)
                 @php
-                    $isActive = str_starts_with($current ?? '', explode('.', $item['route'])[0]);
+                    $isActive = str_starts_with($current ?? '', $item['prefix']);
                 @endphp
                 <li>
                     <a href="{{ route($item['route']) }}"
