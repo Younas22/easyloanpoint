@@ -5,30 +5,29 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Customer extends Model
 {
     protected $fillable = [
         'name', 'email', 'phone', 'aadhaar_number', 'pan_number',
         'address', 'city', 'state', 'pincode', 'dob', 'gender',
-        'status', 'created_by',
+        'employment_type', 'salary', 'status', 'notes', 'created_by',
     ];
 
     protected function casts(): array
     {
         return [
-            'dob' => 'date',
+            'dob'    => 'date',
+            'salary' => 'decimal:2',
         ];
     }
+
+    // ── Relationships ────────────────────────────────────────────────────────
 
     public function loans(): HasMany
     {
         return $this->hasMany(Loan::class);
-    }
-
-    public function creator(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function activeLoans(): HasMany
@@ -36,9 +35,42 @@ class Customer extends Model
         return $this->hasMany(Loan::class)->whereNotIn('status', ['rejected']);
     }
 
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(CustomerAssignment::class);
+    }
+
+    public function currentAssignment(): HasOne
+    {
+        return $this->hasOne(CustomerAssignment::class)->latestOfMany();
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
     public function isActive(): bool
     {
         return $this->status === 'active';
+    }
+
+    public function getMaskedAadhaarAttribute(): string
+    {
+        if (! $this->aadhaar_number) return '—';
+        return 'XXXX-XXXX-' . substr($this->aadhaar_number, -4);
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return match($this->status) {
+            'active'      => 'Active',
+            'inactive'    => 'Inactive',
+            'blacklisted' => 'Blacklisted',
+            default       => ucfirst($this->status),
+        };
     }
 
     public function getStatusBadgeAttribute(): string
@@ -48,6 +80,17 @@ class Customer extends Model
             'inactive'    => 'badge-review',
             'blacklisted' => 'badge-rejected',
             default       => 'badge-pending',
+        };
+    }
+
+    public function getEmploymentLabelAttribute(): string
+    {
+        return match($this->employment_type) {
+            'salaried'      => 'Salaried',
+            'self_employed' => 'Self Employed',
+            'business'      => 'Business',
+            'unemployed'    => 'Unemployed',
+            default         => '—',
         };
     }
 }

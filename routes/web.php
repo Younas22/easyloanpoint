@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Admin\HrController;
+use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\HR\DashboardController as HRDashboard;
 use Illuminate\Support\Facades\Route;
 
@@ -32,6 +33,12 @@ Route::middleware(['auth', 'admin'])
         // HR Management
         Route::resource('hr', HrController::class)->except(['show']);
         Route::patch('hr/{hr}/toggle-status', [HrController::class, 'toggleStatus'])->name('hr.toggle-status');
+
+        // Customer Management
+        Route::resource('customers', CustomerController::class);
+        Route::patch('customers/{customer}/toggle-status', [CustomerController::class, 'toggleStatus'])->name('customers.toggle-status');
+        Route::post('customers/{customer}/assign-hr',      [CustomerController::class, 'assignHr'])->name('customers.assign-hr');
+        Route::patch('customers/{customer}/note',          [CustomerController::class, 'updateNote'])->name('customers.update-note');
     });
 
 // ─── HR routes ────────────────────────────────────────────────────────────────
