@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
+use App\Http\Controllers\Admin\HrController;
 use App\Http\Controllers\HR\DashboardController as HRDashboard;
 use Illuminate\Support\Facades\Route;
 
@@ -27,6 +28,10 @@ Route::middleware(['auth', 'admin'])
     ->group(function () {
         Route::get('/dashboard',         [AdminDashboard::class, 'index'])->name('dashboard');
         Route::get('/dashboard/chart',   [AdminDashboard::class, 'chartData'])->name('dashboard.chart');
+
+        // HR Management
+        Route::resource('hr', HrController::class)->except(['show']);
+        Route::patch('hr/{hr}/toggle-status', [HrController::class, 'toggleStatus'])->name('hr.toggle-status');
     });
 
 // ─── HR routes ────────────────────────────────────────────────────────────────

@@ -5,7 +5,7 @@
 
     $adminNav = [
         ['route' => 'admin.dashboard', 'label' => 'Dashboard',        'icon' => 'grid'],
-        ['route' => 'admin.dashboard', 'label' => 'HR Management',     'icon' => 'users'],
+        ['route' => 'admin.hr.index',   'label' => 'HR Management',     'icon' => 'users'],
         ['route' => 'admin.dashboard', 'label' => 'Customers',         'icon' => 'user-group'],
         ['route' => 'admin.dashboard', 'label' => 'Loan Applications', 'icon' => 'document'],
         ['route' => 'admin.dashboard', 'label' => 'Assignments',       'icon' => 'link'],
