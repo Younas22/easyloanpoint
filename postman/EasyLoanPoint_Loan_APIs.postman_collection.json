@@ -1,0 +1,308 @@
+{
+  "info": {
+    "_postman_id": "elp-loan-apis-v1",
+    "name": "EasyLoanPoint — Loan APIs",
+    "description": "Flutter customer app APIs: profile, loan application, document upload, loan history & status tracking.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",  "value": "http://localhost:8000/api/v1",  "type": "string" },
+    { "key": "token",     "value": "YOUR_SANCTUM_TOKEN_HERE",        "type": "string" },
+    { "key": "loan_id",   "value": "1",                              "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Profile",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Accept",        "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw":  "{{base_url}}/customer/profile",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "profile"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": true,\n  \"message\": \"Profile retrieved.\",\n  \"data\": {\n    \"user\": {\n      \"id\": 5,\n      \"name\": \"Ravi Kumar\",\n      \"email\": \"ravi@example.com\",\n      \"phone\": \"9876543210\",\n      \"profile_image\": null,\n      \"phone_verified\": true,\n      \"role\": \"customer\",\n      \"status\": true,\n      \"member_since\": \"2026-05-15T00:00:00.000000Z\"\n    },\n    \"kyc\": null,\n    \"kyc_complete\": false\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Profile (Basic Info)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Accept",        "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name",            "value": "Ravi Kumar",           "type": "text" },
+                { "key": "email",           "value": "ravi@example.com",     "type": "text" },
+                { "key": "aadhaar_number",  "value": "123456789012",         "type": "text" },
+                { "key": "pan_number",      "value": "ABCDE1234F",           "type": "text" },
+                { "key": "address",         "value": "123 MG Road",          "type": "text" },
+                { "key": "city",            "value": "Mumbai",               "type": "text" },
+                { "key": "state",           "value": "Maharashtra",          "type": "text" },
+                { "key": "pincode",         "value": "400001",               "type": "text" },
+                { "key": "dob",             "value": "1990-06-15",           "type": "text" },
+                { "key": "gender",          "value": "male",                 "type": "text" },
+                { "key": "employment_type", "value": "salaried",             "type": "text" },
+                { "key": "salary",          "value": "50000",                "type": "text" }
+              ]
+            },
+            "url": {
+              "raw":  "{{base_url}}/customer/profile",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "profile"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": true,\n  \"message\": \"Profile updated successfully.\",\n  \"data\": {\n    \"user\": {\n      \"id\": 5,\n      \"name\": \"Ravi Kumar\",\n      \"email\": \"ravi@example.com\",\n      \"phone\": \"9876543210\",\n      \"profile_image\": null\n    },\n    \"kyc\": {\n      \"id\": 3,\n      \"aadhaar_number\": \"XXXX-XXXX-9012\",\n      \"pan_number\": \"ABCDE1234F\",\n      \"address\": \"123 MG Road\",\n      \"city\": \"Mumbai\",\n      \"state\": \"Maharashtra\",\n      \"pincode\": \"400001\",\n      \"dob\": \"1990-06-15\",\n      \"gender\": \"male\",\n      \"employment_type\": \"salaried\",\n      \"employment_label\": \"Salaried\",\n      \"salary\": 50000.0,\n      \"status\": \"active\",\n      \"status_label\": \"Active\"\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Profile Image",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Accept",        "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "profile_image", "type": "file", "src": "/path/to/photo.jpg" }
+              ]
+            },
+            "url": {
+              "raw":  "{{base_url}}/customer/profile",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "profile"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Loans",
+      "item": [
+        {
+          "name": "Apply for Loan",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.status && res.data && res.data.loan) {",
+                  "  pm.collectionVariables.set('loan_id', res.data.loan.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Accept",        "value": "application/json", "type": "text" },
+              { "key": "Content-Type",  "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loan_type\": \"personal\",\n  \"amount_requested\": 200000,\n  \"tenure_months\": 24,\n  \"purpose\": \"Home renovation and furniture purchase.\"\n}"
+            },
+            "url": {
+              "raw":  "{{base_url}}/customer/loans/apply",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "loans", "apply"]
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"status\": true,\n  \"message\": \"Loan application submitted successfully.\",\n  \"data\": {\n    \"loan\": {\n      \"id\": 12,\n      \"loan_number\": \"ELP-2026-000012\",\n      \"loan_type\": \"personal\",\n      \"loan_type_label\": \"Personal Loan\",\n      \"amount_requested\": 200000.0,\n      \"amount_approved\": null,\n      \"interest_rate\": null,\n      \"tenure_months\": 24,\n      \"emi_amount\": null,\n      \"total_payable\": null,\n      \"purpose\": \"Home renovation and furniture purchase.\",\n      \"status\": \"pending\",\n      \"status_label\": \"Pending\",\n      \"remarks\": null,\n      \"applied_at\": \"2026-05-15T09:30:00.000000Z\",\n      \"reviewed_at\": null,\n      \"disbursed_at\": null\n    }\n  }\n}"
+            },
+            {
+              "name": "422 Profile Incomplete",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "body": "{\n  \"status\": false,\n  \"message\": \"Please complete your profile before applying for a loan.\"\n}"
+            },
+            {
+              "name": "422 Validation Error",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "body": "{\n  \"status\": false,\n  \"message\": \"Validation errors\",\n  \"errors\": {\n    \"loan_type\": [\"Loan type must be one of: personal, home, business, vehicle, education.\"],\n    \"amount_requested\": [\"Minimum loan amount is ₹1,000.\"]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Upload Aadhaar",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Accept",        "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": "/path/to/aadhaar.jpg" }
+              ]
+            },
+            "url": {
+              "raw":  "{{base_url}}/customer/loans/{{loan_id}}/documents/aadhaar",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "loans", "{{loan_id}}", "documents", "aadhaar"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": true,\n  \"message\": \"Aadhaar uploaded successfully.\",\n  \"data\": {\n    \"document\": {\n      \"id\": 7,\n      \"type\": \"aadhaar\",\n      \"type_label\": \"Aadhaar Card\",\n      \"url\": \"http://localhost:8000/public/uploads/documents/12/aadhaar/1715765400_aadhaar.jpg\",\n      \"status\": \"pending\",\n      \"uploaded_at\": \"2026-05-15T09:30:00.000000Z\"\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Upload PAN",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Accept",        "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": "/path/to/pan.jpg" }
+              ]
+            },
+            "url": {
+              "raw":  "{{base_url}}/customer/loans/{{loan_id}}/documents/pan",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "loans", "{{loan_id}}", "documents", "pan"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": true,\n  \"message\": \"Pan uploaded successfully.\",\n  \"data\": {\n    \"document\": {\n      \"id\": 8,\n      \"type\": \"pan\",\n      \"type_label\": \"PAN Card\",\n      \"url\": \"http://localhost:8000/public/uploads/documents/12/pan/1715765500_pan.jpg\",\n      \"status\": \"pending\",\n      \"uploaded_at\": \"2026-05-15T09:31:40.000000Z\"\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Upload Selfie",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Accept",        "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": "/path/to/selfie.jpg" }
+              ]
+            },
+            "url": {
+              "raw":  "{{base_url}}/customer/loans/{{loan_id}}/documents/selfie",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "loans", "{{loan_id}}", "documents", "selfie"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": true,\n  \"message\": \"Selfie uploaded successfully.\",\n  \"data\": {\n    \"document\": {\n      \"id\": 9,\n      \"type\": \"selfie\",\n      \"type_label\": \"Selfie\",\n      \"url\": \"http://localhost:8000/public/uploads/documents/12/selfie/1715765600_selfie.jpg\",\n      \"status\": \"pending\",\n      \"uploaded_at\": \"2026-05-15T09:33:20.000000Z\"\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Loan History",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Accept",        "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw":  "{{base_url}}/customer/loans?status=pending&per_page=10",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "loans"],
+              "query": [
+                { "key": "status",    "value": "pending",   "description": "Filter: pending|under_review|approved|rejected|disbursed" },
+                { "key": "loan_type", "value": "",          "description": "Filter: personal|home|business|vehicle|education", "disabled": true },
+                { "key": "per_page",  "value": "10",        "description": "Items per page (max 50)" }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": true,\n  \"message\": \"Loan history retrieved.\",\n  \"data\": {\n    \"loans\": [\n      {\n        \"id\": 12,\n        \"loan_number\": \"ELP-2026-000012\",\n        \"loan_type\": \"personal\",\n        \"loan_type_label\": \"Personal Loan\",\n        \"amount_requested\": 200000.0,\n        \"amount_approved\": null,\n        \"interest_rate\": null,\n        \"tenure_months\": 24,\n        \"emi_amount\": null,\n        \"total_payable\": null,\n        \"purpose\": \"Home renovation and furniture purchase.\",\n        \"status\": \"pending\",\n        \"status_label\": \"Pending\",\n        \"remarks\": null,\n        \"applied_at\": \"2026-05-15T09:30:00.000000Z\",\n        \"reviewed_at\": null,\n        \"disbursed_at\": null\n      }\n    ],\n    \"meta\": {\n      \"current_page\": 1,\n      \"last_page\": 1,\n      \"per_page\": 10,\n      \"total\": 1\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Loan Status Tracking",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Accept",        "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw":  "{{base_url}}/customer/loans/{{loan_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["customer", "loans", "{{loan_id}}", "status"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": true,\n  \"message\": \"Loan status retrieved.\",\n  \"data\": {\n    \"loan\": {\n      \"id\": 12,\n      \"loan_number\": \"ELP-2026-000012\",\n      \"loan_type\": \"personal\",\n      \"loan_type_label\": \"Personal Loan\",\n      \"amount_requested\": 200000.0,\n      \"amount_approved\": 180000.0,\n      \"interest_rate\": 12.5,\n      \"tenure_months\": 24,\n      \"emi_amount\": 8493.21,\n      \"total_payable\": 203837.04,\n      \"purpose\": \"Home renovation and furniture purchase.\",\n      \"status\": \"approved\",\n      \"status_label\": \"Approved\",\n      \"remarks\": \"Documents verified. Disbursement pending.\",\n      \"applied_at\": \"2026-05-15T09:30:00.000000Z\",\n      \"reviewed_at\": \"2026-05-15T14:00:00.000000Z\",\n      \"disbursed_at\": null\n    },\n    \"timeline\": [\n      {\n        \"from_status\": \"pending\",\n        \"to_status\": \"under_review\",\n        \"remarks\": \"Documents received, initiating review.\",\n        \"changed_at\": \"2026-05-15T10:00:00.000000Z\"\n      },\n      {\n        \"from_status\": \"under_review\",\n        \"to_status\": \"approved\",\n        \"remarks\": \"Documents verified. Disbursement pending.\",\n        \"changed_at\": \"2026-05-15T14:00:00.000000Z\"\n      }\n    ],\n    \"documents\": [\n      {\n        \"type\": \"aadhaar\",\n        \"type_label\": \"Aadhaar Card\",\n        \"url\": \"http://localhost:8000/public/uploads/documents/12/aadhaar/1715765400_aadhaar.jpg\",\n        \"status\": \"verified\",\n        \"status_label\": \"Verified\",\n        \"remarks\": null\n      },\n      {\n        \"type\": \"pan\",\n        \"type_label\": \"PAN Card\",\n        \"url\": \"http://localhost:8000/public/uploads/documents/12/pan/1715765500_pan.jpg\",\n        \"status\": \"verified\",\n        \"status_label\": \"Verified\",\n        \"remarks\": null\n      },\n      {\n        \"type\": \"selfie\",\n        \"type_label\": \"Selfie\",\n        \"url\": \"http://localhost:8000/public/uploads/documents/12/selfie/1715765600_selfie.jpg\",\n        \"status\": \"pending\",\n        \"status_label\": \"Pending\",\n        \"remarks\": null\n      }\n    ]\n  }\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"status\": false,\n  \"message\": \"Loan not found.\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

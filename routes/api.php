@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\Customer\LoanController;
+use App\Http\Controllers\Api\Customer\ProfileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -41,5 +43,23 @@ Route::middleware('auth:sanctum')->group(function () {
                 'member_since'   => $user->created_at->format('d M Y'),
             ],
         ]);
+    });
+
+    // ── Customer Mobile App routes ────────────────────────────────────────────
+    Route::prefix('customer')->name('api.customer.')->group(function () {
+
+        // Profile
+        Route::get('/profile',  [ProfileController::class, 'show'])->name('profile.show');
+        Route::put('/profile',  [ProfileController::class, 'update'])->name('profile.update');
+
+        // Loans
+        Route::post('/loans/apply',                 [LoanController::class, 'apply'])->name('loans.apply');
+        Route::get('/loans',                        [LoanController::class, 'history'])->name('loans.history');
+        Route::get('/loans/{loanId}/status',        [LoanController::class, 'statusTracking'])->name('loans.status');
+
+        // Document uploads  (type constrained to aadhaar|pan|selfie)
+        Route::post('/loans/{loanId}/documents/{type}', [LoanController::class, 'uploadDocument'])
+             ->where('type', 'aadhaar|pan|selfie')
+             ->name('loans.docs.upload');
     });
 });

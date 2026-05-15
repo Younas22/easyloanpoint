@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Customer extends Model
 {
     protected $fillable = [
-        'name', 'email', 'phone', 'aadhaar_number', 'pan_number',
+        'user_id', 'name', 'email', 'phone', 'aadhaar_number', 'pan_number',
         'address', 'city', 'state', 'pincode', 'dob', 'gender',
         'employment_type', 'salary', 'status', 'notes', 'created_by',
     ];
@@ -24,6 +24,11 @@ class Customer extends Model
     }
 
     // ── Relationships ────────────────────────────────────────────────────────
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function loans(): HasMany
     {

@@ -33,6 +33,11 @@ class User extends Authenticatable
 
     // ── Relationships ────────────────────────────────────────────────────────
 
+    public function customer(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Customer::class);
+    }
+
     public function assignedLoans(): HasMany
     {
         return $this->hasMany(Loan::class, 'assigned_hr_id');
