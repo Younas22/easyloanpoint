@@ -25,7 +25,8 @@ Route::middleware(['auth', 'admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
-        Route::get('/dashboard', [AdminDashboard::class, 'index'])->name('dashboard');
+        Route::get('/dashboard',         [AdminDashboard::class, 'index'])->name('dashboard');
+        Route::get('/dashboard/chart',   [AdminDashboard::class, 'chartData'])->name('dashboard.chart');
     });
 
 // ─── HR routes ────────────────────────────────────────────────────────────────

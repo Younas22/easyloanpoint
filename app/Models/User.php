@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -11,17 +12,11 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     protected $fillable = [
-        'name',
-        'email',
-        'phone',
-        'password',
-        'role',
-        'status',
+        'name', 'email', 'phone', 'password', 'role', 'status',
     ];
 
     protected $hidden = [
-        'password',
-        'remember_token',
+        'password', 'remember_token',
     ];
 
     protected function casts(): array
@@ -32,6 +27,25 @@ class User extends Authenticatable
             'status'            => 'boolean',
         ];
     }
+
+    // ── Relationships ────────────────────────────────────────────────────────
+
+    public function assignedLoans(): HasMany
+    {
+        return $this->hasMany(Loan::class, 'assigned_hr_id');
+    }
+
+    public function createdCustomers(): HasMany
+    {
+        return $this->hasMany(Customer::class, 'created_by');
+    }
+
+    public function statusChanges(): HasMany
+    {
+        return $this->hasMany(LoanStatusHistory::class, 'changed_by');
+    }
+
+    // ── Role helpers ─────────────────────────────────────────────────────────
 
     public function isAdmin(): bool
     {
