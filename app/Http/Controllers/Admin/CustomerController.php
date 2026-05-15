@@ -111,11 +111,16 @@ class CustomerController extends Controller
 
     public function assignHr(AssignCustomerRequest $request, Customer $customer): RedirectResponse
     {
+        CustomerAssignment::where('customer_id', $customer->id)
+            ->where('is_active', true)
+            ->update(['is_active' => false]);
+
         CustomerAssignment::create([
             'customer_id' => $customer->id,
             'hr_id'       => $request->hr_id,
             'assigned_by' => auth()->id(),
             'notes'       => $request->notes,
+            'is_active'   => true,
         ]);
 
         $customer->loans()

@@ -8,7 +8,7 @@
         ['route' => 'admin.hr.index',         'label' => 'HR Management',    'icon' => 'users',      'prefix' => 'admin.hr'],
         ['route' => 'admin.customers.index',  'label' => 'Customers',        'icon' => 'user-group', 'prefix' => 'admin.customers'],
         ['route' => 'admin.loans.index',      'label' => 'Loan Applications','icon' => 'document',   'prefix' => 'admin.loans'],
-        ['route' => 'admin.dashboard',        'label' => 'Assignments',      'icon' => 'link',       'prefix' => 'admin.assignments'],
+        ['route' => 'admin.assignments.index', 'label' => 'Assignments',      'icon' => 'link',       'prefix' => 'admin.assignments'],
         ['route' => 'admin.dashboard',        'label' => 'Reports',          'icon' => 'chart',      'prefix' => 'admin.reports'],
         ['route' => 'admin.dashboard',        'label' => 'Settings',         'icon' => 'cog',        'prefix' => 'admin.settings'],
         ['route' => 'admin.dashboard',        'label' => 'Activity Logs',    'icon' => 'list',       'prefix' => 'admin.logs'],

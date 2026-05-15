@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Admin\HrController;
 use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\CustomerAssignmentController;
 use App\Http\Controllers\Admin\LoanController as AdminLoanController;
 use App\Http\Controllers\HR\DashboardController as HRDashboard;
 use App\Http\Controllers\HR\LoanController as HRLoanController;
@@ -41,6 +42,14 @@ Route::middleware(['auth', 'admin'])
         Route::patch('customers/{customer}/toggle-status', [CustomerController::class, 'toggleStatus'])->name('customers.toggle-status');
         Route::post('customers/{customer}/assign-hr',      [CustomerController::class, 'assignHr'])->name('customers.assign-hr');
         Route::patch('customers/{customer}/note',          [CustomerController::class, 'updateNote'])->name('customers.update-note');
+
+        // Customer Assignments
+        Route::prefix('assignments')->name('assignments.')->group(function () {
+            Route::get('/',                   [CustomerAssignmentController::class, 'index'])->name('index');
+            Route::post('/',                  [CustomerAssignmentController::class, 'store'])->name('store');
+            Route::get('/hr-stats',           [CustomerAssignmentController::class, 'hrStats'])->name('hr-stats');
+            Route::get('/{customer}/history', [CustomerAssignmentController::class, 'history'])->name('history');
+        });
 
         // Loan Management
         Route::resource('loans', AdminLoanController::class);

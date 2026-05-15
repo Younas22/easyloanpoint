@@ -45,6 +45,11 @@ class User extends Authenticatable
         return $this->hasMany(LoanStatusHistory::class, 'changed_by');
     }
 
+    public function customerAssignments(): HasMany
+    {
+        return $this->hasMany(CustomerAssignment::class, 'hr_id');
+    }
+
     // ── Role helpers ─────────────────────────────────────────────────────────
 
     public function isAdmin(): bool
