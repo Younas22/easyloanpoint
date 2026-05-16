@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\CustomerRequest;
 use App\Models\Customer;
 use App\Models\CustomerAssignment;
 use App\Models\User;
+use App\Services\ActivityLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -67,7 +68,9 @@ class CustomerController extends Controller
         $data               = $request->validated();
         $data['created_by'] = auth()->id();
 
-        Customer::create($data);
+        $customer = Customer::create($data);
+
+        ActivityLogService::customerCreated($customer->name);
 
         return redirect()->route('admin.customers.index')
             ->with('success', 'Customer added successfully.');
@@ -126,6 +129,9 @@ class CustomerController extends Controller
         $customer->loans()
             ->whereIn('status', ['pending', 'under_review'])
             ->update(['assigned_hr_id' => $request->hr_id]);
+
+        $hr = User::find($request->hr_id);
+        ActivityLogService::customerAssigned($customer->name, $hr?->name ?? 'HR');
 
         return redirect()->route('admin.customers.show', $customer)
             ->with('success', 'Customer assigned to HR successfully.');

@@ -10,6 +10,7 @@ use App\Models\Customer;
 use App\Models\Loan;
 use App\Models\LoanDocument;
 use App\Models\User;
+use App\Services\ActivityLogService;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -76,6 +77,7 @@ class LoanController extends Controller
         $loan = Loan::create(array_merge($request->validated(), ['applied_at' => now()]));
 
         $loan->load('customer');
+        ActivityLogService::loanApplied($loan->loan_number, $loan->customer->name ?? 'N/A');
         $this->notifications->notifyNewLoanApplication($loan);
 
         return redirect()
@@ -147,6 +149,8 @@ class LoanController extends Controller
             ]);
         });
 
+        ActivityLogService::loanStatusUpdated($loan->loan_number, $fromStatus, $toStatus);
+
         $this->notifications->notifyLoanStatusChanged(
             $loan->load('customer'),
             $fromStatus,
@@ -171,6 +175,7 @@ class LoanController extends Controller
             'verified_at' => now(),
         ]);
 
+        ActivityLogService::documentVerified($loan->loan_number, $document->file_name ?? 'Document', $request->status);
         $this->notifications->notifyDocumentVerified($document->fresh());
 
         return back()->with('success', 'Document status updated to ' . ucfirst($request->status) . '.');

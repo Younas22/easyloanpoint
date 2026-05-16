@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Services\ActivityLogService;
 use App\Services\SettingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -38,6 +39,8 @@ class SettingController extends Controller
             'homepage'      => $this->saveHomepage($validated),
             'security'      => $this->saveSecurity($request, $validated),
         };
+
+        ActivityLogService::settingsChanged($group);
 
         return response()->json([
             'status'  => true,
