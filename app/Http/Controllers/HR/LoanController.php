@@ -16,6 +16,10 @@ class LoanController extends Controller
     private function baseQuery(): \Illuminate\Database\Eloquent\Builder
     {
         return Loan::with(['customer', 'assignedHR'])
+            ->withCount([
+                'documents',
+                'documents as pending_docs_count' => fn($q) => $q->where('status', 'pending'),
+            ])
             ->where('assigned_hr_id', auth()->id())
             ->latest('applied_at');
     }
@@ -43,6 +47,14 @@ class LoanController extends Controller
             $query->where('loan_type', $request->loan_type);
         }
 
+        if ($request->filled('date_from')) {
+            $query->whereDate('applied_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('applied_at', '<=', $request->date_to);
+        }
+
         $loans = $query->paginate(15)->withQueryString();
 
         $base = fn() => Loan::where('assigned_hr_id', auth()->id());
@@ -51,6 +63,7 @@ class LoanController extends Controller
             'pending'      => $base()->where('status', 'pending')->count(),
             'under_review' => $base()->where('status', 'under_review')->count(),
             'approved'     => $base()->where('status', 'approved')->count(),
+            'rejected'     => $base()->where('status', 'rejected')->count(),
             'disbursed'    => $base()->where('status', 'disbursed')->count(),
         ];
 
@@ -116,7 +129,7 @@ class LoanController extends Controller
             $request->remarks
         );
 
-        return back()->with('success', "Loan status updated to " . $loan->fresh()->status_label . ".");
+        return back()->with('success', 'Loan status updated to ' . $loan->fresh()->status_label . '.');
     }
 
     public function verifyDocument(Request $request, Loan $loan)

@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\CustomerAssignmentController;
 use App\Http\Controllers\Admin\LoanController as AdminLoanController;
 use App\Http\Controllers\HR\DashboardController as HRDashboard;
 use App\Http\Controllers\HR\LoanController as HRLoanController;
+use App\Http\Controllers\HR\CustomerController as HRCustomerController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
@@ -100,6 +101,11 @@ Route::middleware(['auth', 'hr'])
     ->name('hr.')
     ->group(function () {
         Route::get('/dashboard', [HRDashboard::class, 'index'])->name('dashboard');
+
+        // My Customers (HR sees only assigned customers)
+        Route::get('/customers',                         [HRCustomerController::class, 'index'])->name('customers.index');
+        Route::get('/customers/{customer}',              [HRCustomerController::class, 'show'])->name('customers.show');
+        Route::post('/customers/{customer}/remark',      [HRCustomerController::class, 'addRemark'])->name('customers.remark');
 
         // Loan Management (HR sees only assigned loans)
         Route::get('/loans',                             [HRLoanController::class, 'index'])->name('loans.index');

@@ -16,11 +16,11 @@
     ];
 
     $hrNav = [
-        ['route' => 'hr.dashboard',    'label' => 'Dashboard',        'icon' => 'grid',       'prefix' => 'hr.dashboard'],
-        ['route' => 'hr.dashboard',    'label' => 'My Customers',     'icon' => 'user-group', 'prefix' => 'hr.customers'],
-        ['route' => 'hr.loans.index',  'label' => 'Loan Applications','icon' => 'document',   'prefix' => 'hr.loans'],
-        ['route' => 'notifications.index', 'label' => 'Notifications', 'icon' => 'bell',      'prefix' => 'notifications'],
-        ['route' => 'hr.dashboard',    'label' => 'Profile',          'icon' => 'user',       'prefix' => 'hr.profile'],
+        ['route' => 'hr.dashboard',        'label' => 'Dashboard',        'icon' => 'grid',       'prefix' => 'hr.dashboard'],
+        ['route' => 'hr.customers.index',  'label' => 'My Customers',     'icon' => 'user-group', 'prefix' => 'hr.customers'],
+        ['route' => 'hr.loans.index',      'label' => 'Loan Applications','icon' => 'document',   'prefix' => 'hr.loans'],
+        ['route' => 'notifications.index', 'label' => 'Notifications',    'icon' => 'bell',       'prefix' => 'notifications'],
+        ['route' => 'profile.show',        'label' => 'Profile',          'icon' => 'user',       'prefix' => 'profile'],
     ];
 
     $navItems = $isAdmin ? $adminNav : $hrNav;
