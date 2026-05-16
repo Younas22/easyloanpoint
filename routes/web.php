@@ -75,11 +75,24 @@ Route::middleware(['auth', 'admin'])
         Route::post('loans/{loan}/documents',                        [AdminLoanController::class, 'uploadDocument'])->name('loans.upload-document');
         Route::patch('loans/{loan}/documents/{document}/verify',     [AdminLoanController::class, 'verifyDocument'])->name('loans.verify-document');
 
-        // Reports, Settings, Activity Logs
-        Route::get('/reports',  [ReportController::class, 'index'])->name('reports.index');
-        Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
-        Route::get('/logs',     [ActivityLogController::class, 'index'])->name('logs.index');
+        // Reports & Analytics
+        Route::get('/reports',        [ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/ajax',   [ReportController::class, 'ajax'])->name('reports.ajax');
+        Route::get('/reports/export', [ReportController::class, 'exportCsv'])->name('reports.export');
+        Route::get('/reports/print',  [ReportController::class, 'printReport'])->name('reports.print');
+        Route::get('/settings',          [SettingController::class, 'index'])->name('settings.index');
+        Route::post('/settings/{group}', [SettingController::class, 'update'])->name('settings.update');
+        Route::get('/logs',      [ActivityLogController::class, 'index'])->name('logs.index');
+        Route::get('/logs/ajax', [ActivityLogController::class, 'ajax'])->name('logs.ajax');
     });
+
+// ─── Profile routes (shared: admin + HR) ─────────────────────────────────────
+Route::middleware('auth')->group(function () {
+    Route::get('/profile',           [ProfileController::class, 'show'])->name('profile.show');
+    Route::put('/profile',           [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/profile/password',  [ProfileController::class, 'showPasswordForm'])->name('profile.password');
+    Route::put('/profile/password',  [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+});
 
 // ─── HR routes ────────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'hr'])

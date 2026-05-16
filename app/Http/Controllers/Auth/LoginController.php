@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Services\ActivityLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -48,11 +49,16 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
+        ActivityLogService::loginSuccess($user->name);
+
         return $this->redirectByRole();
     }
 
     public function logout(Request $request): RedirectResponse
     {
+        $name = Auth::user()?->name ?? 'User';
+        ActivityLogService::logout($name);
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

@@ -46,8 +46,8 @@
                     </span>
                 </div>
                 <div class="py-1">
-                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Profile</a>
-                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Change Password</a>
+                    <a href="{{ route('profile.show') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Profile</a>
+                    <a href="{{ route('profile.password') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Change Password</a>
                 </div>
                 <div class="border-t border-gray-100 py-1">
                     <form action="{{ route('logout') }}" method="POST">

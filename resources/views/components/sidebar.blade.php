@@ -10,9 +10,9 @@
         ['route' => 'admin.loans.index',      'label' => 'Loan Applications','icon' => 'document',   'prefix' => 'admin.loans'],
         ['route' => 'admin.assignments.index', 'label' => 'Assignments',      'icon' => 'link',       'prefix' => 'admin.assignments'],
         ['route' => 'notifications.index',   'label' => 'Notifications',    'icon' => 'bell',       'prefix' => 'notifications'],
-        ['route' => 'admin.dashboard',        'label' => 'Reports',          'icon' => 'chart',      'prefix' => 'admin.reports'],
-        ['route' => 'admin.dashboard',        'label' => 'Settings',         'icon' => 'cog',        'prefix' => 'admin.settings'],
-        ['route' => 'admin.dashboard',        'label' => 'Activity Logs',    'icon' => 'list',       'prefix' => 'admin.logs'],
+        ['route' => 'admin.reports.index',    'label' => 'Reports',          'icon' => 'chart',      'prefix' => 'admin.reports'],
+        ['route' => 'admin.settings.index',   'label' => 'Settings',         'icon' => 'cog',        'prefix' => 'admin.settings'],
+        ['route' => 'admin.logs.index',       'label' => 'Activity Logs',    'icon' => 'list',       'prefix' => 'admin.logs'],
     ];
 
     $hrNav = [
