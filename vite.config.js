@@ -10,6 +10,15 @@ export default defineConfig({
         }),
         tailwindcss(),
     ],
+    build: {
+        emptyOutDir: true,
+        rollupOptions: {
+            output: {
+                entryFileNames: 'assets/app.js',
+                assetFileNames: 'assets/[name][extname]',
+            },
+        },
+    },
     server: {
         watch: {
             ignored: ['**/storage/framework/views/**'],

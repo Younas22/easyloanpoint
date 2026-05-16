@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Customer Management')
+@section('page-title', 'Customer Management')
 
 @section('page-header')
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -117,7 +118,7 @@
     {{-- Table --}}
     <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200 text-sm">
+            <table class="w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">#</th>
@@ -299,14 +300,14 @@
 
     function submitDelete(id) {
         const form = document.getElementById('delete-form');
-        form.action = `/admin/customers/${id}`;
+        form.action = `{{ url('admin/customers') }}/${id}`;
         form.submit();
     }
 
     function toggleStatus(id, btn) {
-        if (btn.classList.contains('cursor-not-allowed')) return; // blacklisted
+        if (btn.classList.contains('cursor-not-allowed')) return;
 
-        fetch(`/admin/customers/${id}/toggle-status`, {
+        fetch(`{{ url('admin/customers') }}/${id}/toggle-status`, {
             method: 'PATCH',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,

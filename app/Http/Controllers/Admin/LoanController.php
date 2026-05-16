@@ -85,7 +85,12 @@ class LoanController extends Controller
 
     public function show(Loan $loan)
     {
-        $loan->load(['customer', 'assignedHR', 'statusHistories.changedBy', 'documents.verifiedBy']);
+        $loan->load([
+            'customer',
+            'assignedHR',
+            'statusHistories' => fn ($q) => $q->with('changedBy')->oldest(),
+            'documents.verifiedBy',
+        ]);
         $hrUsers = User::where('role', 'hr')->where('status', true)->orderBy('name')->get();
 
         return view('admin.loans.show', compact('loan', 'hrUsers'));

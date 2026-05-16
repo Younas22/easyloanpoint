@@ -10,6 +10,10 @@ use App\Http\Controllers\HR\DashboardController as HRDashboard;
 use App\Http\Controllers\HR\LoanController as HRLoanController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\ActivityLogController;
 use Illuminate\Support\Facades\Route;
 
 // ─── Public homepage ──────────────────────────────────────────────────────────
@@ -70,6 +74,11 @@ Route::middleware(['auth', 'admin'])
         Route::patch('loans/{loan}/status',                          [AdminLoanController::class, 'updateStatus'])->name('loans.update-status');
         Route::post('loans/{loan}/documents',                        [AdminLoanController::class, 'uploadDocument'])->name('loans.upload-document');
         Route::patch('loans/{loan}/documents/{document}/verify',     [AdminLoanController::class, 'verifyDocument'])->name('loans.verify-document');
+
+        // Reports, Settings, Activity Logs
+        Route::get('/reports',  [ReportController::class, 'index'])->name('reports.index');
+        Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+        Route::get('/logs',     [ActivityLogController::class, 'index'])->name('logs.index');
     });
 
 // ─── HR routes ────────────────────────────────────────────────────────────────

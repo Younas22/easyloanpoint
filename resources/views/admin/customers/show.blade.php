@@ -35,7 +35,7 @@
                 </svg>
                 Edit
             </a>
-            <button onclick="document.getElementById('assign-modal').classList.remove('hidden')"
+            <button onclick="openAssignModal()" type="button"
                     class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -177,7 +177,7 @@
                 </div>
                 @if($customer->loans->count())
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-100 text-sm">
+                        <table class="w-full divide-y divide-gray-100 text-sm">
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Loan #</th>
@@ -346,62 +346,94 @@
     </div>
 
     {{-- ── Assign HR Modal ────────────────────────────────────── --}}
-    <div id="assign-modal" class="fixed inset-0 z-50 hidden overflow-y-auto">
-        <div class="flex min-h-screen items-center justify-center p-4">
-            <div class="fixed inset-0 bg-black/50" onclick="document.getElementById('assign-modal').classList.add('hidden')"></div>
-            <div class="relative z-10 w-full max-w-md rounded-2xl border border-gray-200 bg-white shadow-2xl">
+    <div id="assign-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none;">
+        {{-- Backdrop --}}
+        <div class="absolute inset-0 bg-gray-900/60"
+             onclick="closeAssignModal()"></div>
 
+        {{-- Modal panel --}}
+        <div class="relative z-10 w-full max-w-md rounded-2xl bg-white shadow-2xl">
+
+                {{-- Header --}}
                 <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">
-                    <h3 class="text-base font-bold text-gray-900">Assign HR Member</h3>
-                    <button onclick="document.getElementById('assign-modal').classList.add('hidden')"
-                            class="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+                    <div>
+                        <h3 class="text-base font-bold text-gray-900">Assign HR Member</h3>
+                        <p class="mt-0.5 text-xs text-gray-500">for <strong>{{ $customer->name }}</strong></p>
+                    </div>
+                    <button type="button" onclick="closeAssignModal()"
+                            class="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
                     </button>
                 </div>
 
-                <form method="POST" action="{{ route('admin.customers.assign-hr', $customer) }}" class="px-6 py-5 space-y-4">
+                {{-- Current assignment info --}}
+                @if($customer->assignments->first())
+                    @php $cur = $customer->assignments->first(); @endphp
+                    <div class="mx-6 mt-4 flex items-center gap-3 rounded-lg bg-blue-50 px-4 py-3">
+                        <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-blue-200 text-xs font-bold text-blue-800">
+                            {{ strtoupper(substr($cur->hr->name, 0, 2)) }}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-semibold text-blue-800 truncate">Currently: {{ $cur->hr->name }}</p>
+                            <p class="text-xs text-blue-600 truncate">{{ $cur->hr->email }}</p>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Form --}}
+                <form method="POST" action="{{ route('admin.customers.assign-hr', $customer) }}"
+                      class="px-6 py-5 space-y-4">
                     @csrf
 
                     <div>
                         <label for="hr_id" class="mb-1.5 block text-sm font-medium text-gray-700">
                             Select HR Member <span class="text-red-500">*</span>
                         </label>
-                        <select name="hr_id" id="hr_id" required
-                                class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                            <option value="">— Choose HR —</option>
-                            @foreach($hrs as $hr)
-                                <option value="{{ $hr->id }}"
-                                        {{ $customer->assignments->first()?->hr_id === $hr->id ? 'selected' : '' }}>
-                                    {{ $hr->name }} ({{ $hr->email }})
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('hr_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                        @if($hrs->isEmpty())
+                            <p class="rounded-lg bg-yellow-50 border border-yellow-200 px-3 py-2.5 text-sm text-yellow-700">
+                                No active HR members available. Please add HR members first.
+                            </p>
+                        @else
+                            <select name="hr_id" id="hr_id" required
+                                    class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500
+                                           @error('hr_id') border-red-400 bg-red-50 @enderror">
+                                <option value="">— Choose HR Member —</option>
+                                @foreach($hrs as $hr)
+                                    <option value="{{ $hr->id }}"
+                                            {{ (old('hr_id') == $hr->id || $customer->assignments->first()?->hr_id == $hr->id) ? 'selected' : '' }}>
+                                        {{ $hr->name }} &bull; {{ $hr->email }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('hr_id')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        @endif
                     </div>
 
                     <div>
-                        <label for="assign_notes" class="mb-1.5 block text-sm font-medium text-gray-700">Notes (optional)</label>
+                        <label for="assign_notes" class="mb-1.5 block text-sm font-medium text-gray-700">
+                            Notes <span class="text-gray-400 font-normal">(optional)</span>
+                        </label>
                         <textarea name="notes" id="assign_notes" rows="3"
-                                  placeholder="Assignment reason or instructions…"
-                                  class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"></textarea>
+                                  placeholder="Reason for assignment or special instructions…"
+                                  class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm resize-none focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">{{ old('notes') }}</textarea>
                     </div>
 
-                    <div class="flex gap-3 pt-2">
-                        <button type="button"
-                                onclick="document.getElementById('assign-modal').classList.add('hidden')"
-                                class="flex-1 rounded-lg border border-gray-300 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                    <div class="flex gap-3 pt-1">
+                        <button type="button" onclick="closeAssignModal()"
+                                class="flex-1 rounded-lg border border-gray-300 bg-white py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50">
                             Cancel
                         </button>
-                        <button type="submit"
-                                class="flex-1 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">
-                            Assign
+                        <button type="submit" @if($hrs->isEmpty()) disabled @endif
+                                class="flex-1 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                            Assign HR
                         </button>
                     </div>
                 </form>
             </div>
-        </div>
     </div>
 
 @endsection
@@ -430,9 +462,17 @@
         });
     }
 
-    // Open assign modal if validation error happened
+    function openAssignModal() {
+        document.getElementById('assign-modal').style.display = 'flex';
+    }
+
+    function closeAssignModal() {
+        document.getElementById('assign-modal').style.display = 'none';
+    }
+
+    // Reopen modal on validation error
     @if($errors->has('hr_id'))
-        document.getElementById('assign-modal').classList.remove('hidden');
+        openAssignModal();
     @endif
 </script>
 @endpush

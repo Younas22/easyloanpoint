@@ -64,7 +64,7 @@
     {{-- Table --}}
     <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200 text-sm">
+            <table class="w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">#</th>
@@ -84,7 +84,7 @@
                             <td class="px-5 py-4">
                                 <div class="flex items-center gap-3">
                                     @if($hr->profile_image)
-                                        <img src="{{ asset($hr->profile_image) }}"
+                                        <img src="{{ asset('public/' . $hr->profile_image) }}"
                                              alt="{{ $hr->name }}"
                                              class="h-9 w-9 rounded-full object-cover ring-2 ring-gray-100">
                                     @else
@@ -191,14 +191,14 @@
 
     function submitDelete(id) {
         const form = document.getElementById('delete-form');
-        form.action = `/admin/hr/${id}`;
+        form.action = `{{ url('admin/hr') }}/${id}`;
         form.submit();
     }
 
     function toggleStatus(id, btn) {
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-        fetch(`/admin/hr/${id}/toggle-status`, {
+        fetch(`{{ url('admin/hr') }}/${id}/toggle-status`, {
             method: 'PATCH',
             headers: {
                 'X-CSRF-TOKEN': csrfToken,

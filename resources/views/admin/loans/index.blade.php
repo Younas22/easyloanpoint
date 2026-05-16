@@ -102,7 +102,7 @@
     {{-- Table --}}
     <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200 text-sm">
+            <table class="w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">#</th>
@@ -119,14 +119,14 @@
                 <tbody class="divide-y divide-gray-100">
                     @forelse($loans as $loan)
                         @php
-                            $statusClasses = [
-                                'pending'      => 'bg-yellow-100 text-yellow-800',
-                                'under_review' => 'bg-blue-100 text-blue-800',
-                                'approved'     => 'bg-green-100 text-green-800',
-                                'rejected'     => 'bg-red-100 text-red-800',
-                                'disbursed'    => 'bg-purple-100 text-purple-800',
+                            $statusMap = [
+                                'pending'      => ['pill' => 'bg-yellow-100 text-yellow-700', 'dot' => 'bg-yellow-500'],
+                                'under_review' => ['pill' => 'bg-blue-100 text-blue-700',    'dot' => 'bg-blue-500'],
+                                'approved'     => ['pill' => 'bg-green-100 text-green-700',  'dot' => 'bg-green-500'],
+                                'rejected'     => ['pill' => 'bg-red-100 text-red-700',      'dot' => 'bg-red-500'],
+                                'disbursed'    => ['pill' => 'bg-purple-100 text-purple-700','dot' => 'bg-purple-500'],
                             ];
-                            $sc = $statusClasses[$loan->status] ?? 'bg-gray-100 text-gray-800';
+                            $sm = $statusMap[$loan->status] ?? ['pill' => 'bg-gray-100 text-gray-600', 'dot' => 'bg-gray-400'];
                         @endphp
                         <tr class="transition-colors hover:bg-gray-50">
                             <td class="whitespace-nowrap px-5 py-4 text-xs text-gray-400">
@@ -157,7 +157,8 @@
                                 @endif
                             </td>
                             <td class="whitespace-nowrap px-5 py-4 text-center">
-                                <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold {{ $sc }}">
+                                <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold {{ $sm['pill'] }}">
+                                    <span class="h-1.5 w-1.5 rounded-full {{ $sm['dot'] }}"></span>
                                     {{ $loan->status_label }}
                                 </span>
                             </td>
@@ -240,7 +241,7 @@
     function confirmDelete(id, loanNo) {
         if (!confirm(`Delete loan ${loanNo}? This cannot be undone.`)) return;
         const form = document.getElementById('delete-form');
-        form.action = `/admin/loans/${id}`;
+        form.action = `{{ url('admin/loans') }}/${id}`;
         form.submit();
     }
 </script>

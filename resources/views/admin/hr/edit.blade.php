@@ -41,7 +41,7 @@
                     <div id="img-preview"
                          class="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full border-2 border-gray-200 bg-gray-50 overflow-hidden">
                         @if($hr->profile_image)
-                            <img src="{{ asset($hr->profile_image) }}"
+                            <img src="{{ asset('public') }}/{{ $hr->profile_image }}"
                                  alt="{{ $hr->name }}"
                                  class="h-full w-full object-cover">
                         @else

@@ -4,14 +4,14 @@
 
 @section('page-header')
     @php
-        $statusClasses = [
-            'pending'      => 'bg-yellow-100 text-yellow-800 border-yellow-200',
-            'under_review' => 'bg-blue-100 text-blue-800 border-blue-200',
-            'approved'     => 'bg-green-100 text-green-800 border-green-200',
-            'rejected'     => 'bg-red-100 text-red-800 border-red-200',
-            'disbursed'    => 'bg-purple-100 text-purple-800 border-purple-200',
+        $statusMap = [
+            'pending'      => ['pill' => 'bg-yellow-100 text-yellow-700', 'dot' => 'bg-yellow-500'],
+            'under_review' => ['pill' => 'bg-blue-100 text-blue-700',    'dot' => 'bg-blue-500'],
+            'approved'     => ['pill' => 'bg-green-100 text-green-700',  'dot' => 'bg-green-500'],
+            'rejected'     => ['pill' => 'bg-red-100 text-red-700',      'dot' => 'bg-red-500'],
+            'disbursed'    => ['pill' => 'bg-purple-100 text-purple-700','dot' => 'bg-purple-500'],
         ];
-        $sc = $statusClasses[$loan->status] ?? 'bg-gray-100 text-gray-800 border-gray-200';
+        $sm = $statusMap[$loan->status] ?? ['pill' => 'bg-gray-100 text-gray-600', 'dot' => 'bg-gray-400'];
     @endphp
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div class="flex items-center gap-3">
@@ -24,7 +24,8 @@
             <div>
                 <div class="flex items-center gap-2.5">
                     <h1 class="font-mono text-xl font-bold text-gray-900">{{ $loan->loan_number }}</h1>
-                    <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold {{ $sc }}">
+                    <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold {{ $sm['pill'] }}">
+                        <span class="h-1.5 w-1.5 rounded-full {{ $sm['dot'] }}"></span>
                         {{ $loan->status_label }}
                     </span>
                 </div>
@@ -260,7 +261,7 @@
 
                             {{-- Actions --}}
                             <div class="flex items-center gap-2 flex-shrink-0">
-                                <a href="{{ asset($doc->file_path) }}" target="_blank"
+                                <a href="{{ asset('public/' . $doc->file_path) }}" target="_blank"
                                    class="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition-colors hover:bg-gray-50 hover:text-blue-600">
                                     <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -291,44 +292,144 @@
         </div>
 
         {{-- Status Timeline --}}
-        <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
-            <div class="border-b border-gray-100 px-6 py-4">
+        <div class="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+            <div class="border-b border-gray-100 bg-gray-50/60 px-6 py-4 flex items-center gap-2">
+                <svg class="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
                 <h2 class="text-sm font-semibold text-gray-800">Status History</h2>
             </div>
+
             @if($loan->statusHistories->isEmpty())
-                <div class="px-6 py-8 text-center text-sm text-gray-400">No status changes recorded.</div>
+                <div class="flex flex-col items-center justify-center gap-2 px-6 py-12 text-center">
+                    <svg class="h-8 w-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                    <p class="text-sm text-gray-400">No status changes recorded yet.</p>
+                </div>
             @else
-                <div class="px-6 py-5">
-                    <ol class="relative border-l border-gray-200">
-                        @foreach($loan->statusHistories as $history)
+                <div class="px-6 py-6">
+                    <ol class="relative space-y-0">
+                        @foreach($loan->statusHistories as $index => $history)
                             @php
-                                $dotColors = [
-                                    'pending'      => 'bg-yellow-400',
-                                    'under_review' => 'bg-blue-500',
-                                    'approved'     => 'bg-green-500',
-                                    'rejected'     => 'bg-red-500',
-                                    'disbursed'    => 'bg-purple-500',
+                                $historyStatusMap = [
+                                    'pending'      => [
+                                        'pill'    => 'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
+                                        'dot'     => 'bg-amber-400',
+                                        'ring'    => 'ring-amber-100',
+                                        'icon_bg' => 'bg-amber-100',
+                                        'icon'    => 'text-amber-600',
+                                    ],
+                                    'under_review' => [
+                                        'pill'    => 'bg-blue-50 text-blue-700 ring-1 ring-blue-200',
+                                        'dot'     => 'bg-blue-500',
+                                        'ring'    => 'ring-blue-100',
+                                        'icon_bg' => 'bg-blue-100',
+                                        'icon'    => 'text-blue-600',
+                                    ],
+                                    'approved'     => [
+                                        'pill'    => 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
+                                        'dot'     => 'bg-emerald-500',
+                                        'ring'    => 'ring-emerald-100',
+                                        'icon_bg' => 'bg-emerald-100',
+                                        'icon'    => 'text-emerald-600',
+                                    ],
+                                    'rejected'     => [
+                                        'pill'    => 'bg-red-50 text-red-700 ring-1 ring-red-200',
+                                        'dot'     => 'bg-red-500',
+                                        'ring'    => 'ring-red-100',
+                                        'icon_bg' => 'bg-red-100',
+                                        'icon'    => 'text-red-600',
+                                    ],
+                                    'disbursed'    => [
+                                        'pill'    => 'bg-purple-50 text-purple-700 ring-1 ring-purple-200',
+                                        'dot'     => 'bg-purple-500',
+                                        'ring'    => 'ring-purple-100',
+                                        'icon_bg' => 'bg-purple-100',
+                                        'icon'    => 'text-purple-600',
+                                    ],
                                 ];
-                                $dot = $dotColors[$history->to_status] ?? 'bg-gray-400';
+                                $hs      = $historyStatusMap[$history->to_status]   ?? ['pill' => 'bg-gray-100 text-gray-600 ring-1 ring-gray-200', 'dot' => 'bg-gray-400', 'ring' => 'ring-gray-100', 'icon_bg' => 'bg-gray-100', 'icon' => 'text-gray-500'];
+                                $fromMap = $historyStatusMap[$history->from_status] ?? ['pill' => 'bg-gray-100 text-gray-500 ring-1 ring-gray-200', 'dot' => 'bg-gray-300'];
+                                $isLast  = $loop->last;
                             @endphp
-                            <li class="mb-6 ml-5 last:mb-0">
-                                <span class="absolute -left-2 flex h-4 w-4 items-center justify-center rounded-full {{ $dot }} ring-4 ring-white"></span>
-                                <div>
-                                    <div class="flex items-center gap-2">
-                                        @if($history->from_status)
-                                            <span class="text-xs text-gray-500">{{ ucfirst(str_replace('_', ' ', $history->from_status)) }}</span>
-                                            <svg class="h-3 w-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                            <li class="relative flex gap-4 {{ $isLast ? '' : 'pb-6' }}">
+                                {{-- Vertical connector line --}}
+                                @if(!$isLast)
+                                    <div class="absolute left-4 top-9 bottom-0 w-px bg-gradient-to-b from-gray-200 to-transparent"></div>
+                                @endif
+
+                                {{-- Icon dot --}}
+                                <div class="relative z-10 flex-shrink-0">
+                                    <div class="flex h-8 w-8 items-center justify-center rounded-full {{ $hs['icon_bg'] }} ring-4 {{ $hs['ring'] }}">
+                                        @if($history->to_status === 'approved')
+                                            <svg class="h-4 w-4 {{ $hs['icon'] }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                        @elseif($history->to_status === 'rejected')
+                                            <svg class="h-4 w-4 {{ $hs['icon'] }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        @elseif($history->to_status === 'disbursed')
+                                            <svg class="h-4 w-4 {{ $hs['icon'] }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                        @elseif($history->to_status === 'under_review')
+                                            <svg class="h-4 w-4 {{ $hs['icon'] }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                            </svg>
+                                        @else
+                                            <svg class="h-4 w-4 {{ $hs['icon'] }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                             </svg>
                                         @endif
-                                        <span class="text-sm font-semibold text-gray-800">{{ ucfirst(str_replace('_', ' ', $history->to_status)) }}</span>
                                     </div>
-                                    <p class="mt-0.5 text-xs text-gray-400">
-                                        By {{ $history->changedBy?->name ?? 'System' }} &bull;
-                                        {{ $history->created_at->format('d M Y, h:i A') }}
-                                    </p>
+                                </div>
+
+                                {{-- Content --}}
+                                <div class="flex-1 min-w-0 pt-0.5">
+                                    {{-- Status transition badges --}}
+                                    <div class="flex flex-wrap items-center gap-1.5">
+                                        @if($history->from_status)
+                                            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {{ $fromMap['pill'] }}">
+                                                {{ ucfirst(str_replace('_', ' ', $history->from_status)) }}
+                                            </span>
+                                            <svg class="h-3 w-3 flex-shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                                            </svg>
+                                        @endif
+                                        <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $hs['pill'] }}">
+                                            <span class="h-1.5 w-1.5 rounded-full {{ $hs['dot'] }}"></span>
+                                            {{ ucfirst(str_replace('_', ' ', $history->to_status)) }}
+                                        </span>
+                                    </div>
+
+                                    {{-- Meta info --}}
+                                    <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                                        <span class="flex items-center gap-1 text-xs text-gray-400">
+                                            <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                            </svg>
+                                            <span class="font-medium text-gray-600">{{ $history->changedBy?->name ?? 'System' }}</span>
+                                        </span>
+                                        <span class="text-gray-300">&bull;</span>
+                                        <span class="flex items-center gap-1 text-xs text-gray-400">
+                                            <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            </svg>
+                                            {{ $history->created_at->format('d M Y, h:i A') }}
+                                        </span>
+                                    </div>
+
+                                    {{-- Remarks --}}
                                     @if($history->remarks)
-                                        <p class="mt-1 rounded bg-gray-50 px-2 py-1 text-xs text-gray-600">{{ $history->remarks }}</p>
+                                        <div class="mt-2 flex items-start gap-1.5 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2">
+                                            <svg class="mt-0.5 h-3 w-3 flex-shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+                                            </svg>
+                                            <p class="text-xs text-gray-600">{{ $history->remarks }}</p>
+                                        </div>
                                     @endif
                                 </div>
                             </li>
