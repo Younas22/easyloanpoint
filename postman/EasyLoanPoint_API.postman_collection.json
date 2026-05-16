@@ -1,0 +1,503 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "EasyLoanPoint API",
+    "description": "Complete Flutter API collection for EasyLoanPoint — generated from routes/api.php and all Api controllers. API prefix: api/v1 (set in bootstrap/app.php).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Ping",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/ping",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "ping"]
+            },
+            "description": "Public health-check. Returns API version and running status."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rahul@example.com\",\n  \"password\": \"Password@123\",\n  \"password_confirmation\": \"Password@123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "register"]
+            },
+            "description": "Register a new customer. Sends OTP to mobile number on success.\n\nValidation:\n- name: required, string, min:2, max:100\n- mobile: required, 10-digit Indian mobile (6-9 start), unique\n- email: optional, valid email, unique\n- password: required, min:8, must match password_confirmation"
+          },
+          "response": []
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mobile\": \"9876543210\",\n  \"otp\": \"123456\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/verify-otp",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "verify-otp"]
+            },
+            "description": "Verify the 6-digit OTP sent after registration. Returns Bearer token on success.\n\nValidation:\n- mobile: required, valid Indian mobile\n- otp: required, exactly 6 digits"
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mobile\": \"9876543210\",\n  \"password\": \"Password@123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Login with mobile + password. Revokes all previous tokens and issues a fresh Bearer token.\n\nValidation:\n- mobile: required, valid Indian mobile\n- password: required, string"
+          },
+          "response": []
+        },
+        {
+          "name": "Forgot Password (Send OTP)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mobile\": \"9876543210\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/forgot-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "forgot-password"]
+            },
+            "description": "Send OTP to registered mobile for password reset. Always returns success to prevent phone enumeration.\n\nValidation:\n- mobile: required, valid Indian mobile"
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mobile\": \"9876543210\",\n  \"otp\": \"123456\",\n  \"password\": \"NewPassword@123\",\n  \"password_confirmation\": \"NewPassword@123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/reset-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "reset-password"]
+            },
+            "description": "Verify OTP and set a new password. Revokes all active tokens — user must login again.\n\nValidation:\n- mobile: required, valid Indian mobile\n- otp: required, exactly 6 digits\n- password: required, min:8, must match password_confirmation"
+          },
+          "response": []
+        },
+        {
+          "name": "Resend OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mobile\": \"9876543210\",\n  \"purpose\": \"register\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/resend-otp",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "resend-otp"]
+            },
+            "description": "Resend OTP for registration or forgot-password flow.\n\nValidation:\n- mobile: required, valid Indian mobile\n- purpose: required, one of: register | forgot_password"
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "logout"]
+            },
+            "description": "Revoke the current Sanctum access token (logout). Requires Bearer token."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "Get Authenticated User",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/user",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "user"]
+            },
+            "description": "Returns basic info of the currently authenticated user: id, name, mobile, email, phone_verified, member_since."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Profile",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/customer/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "customer", "profile"]
+            },
+            "description": "Returns authenticated user's profile and KYC details. kyc is null if KYC not yet submitted."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "value": "Rahul Sharma", "type": "text", "description": "optional, min:2, max:100" },
+                { "key": "email", "value": "rahul@example.com", "type": "text", "description": "optional, valid email" },
+                { "key": "profile_image", "type": "file", "description": "optional, jpg/jpeg/png, max 2MB", "src": [] },
+                { "key": "aadhaar_number", "value": "123456789012", "type": "text", "description": "optional, exactly 12 digits" },
+                { "key": "pan_number", "value": "ABCDE1234F", "type": "text", "description": "optional, format: ABCDE1234F" },
+                { "key": "address", "value": "123, MG Road, Pune", "type": "text", "description": "optional, max:500" },
+                { "key": "city", "value": "Pune", "type": "text", "description": "optional, max:100" },
+                { "key": "state", "value": "Maharashtra", "type": "text", "description": "optional, max:100" },
+                { "key": "pincode", "value": "411001", "type": "text", "description": "optional, exactly 6 digits" },
+                { "key": "dob", "value": "1995-06-15", "type": "text", "description": "optional, date before today (YYYY-MM-DD)" },
+                { "key": "gender", "value": "male", "type": "text", "description": "optional, one of: male | female | other" },
+                { "key": "employment_type", "value": "salaried", "type": "text", "description": "optional, one of: salaried | self_employed | business | unemployed" },
+                { "key": "salary", "value": "50000", "type": "text", "description": "optional, numeric, min:0" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/customer/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "customer", "profile"]
+            },
+            "description": "Update user profile and/or KYC details. All fields are optional. Accepts multipart/form-data to support profile_image upload. KYC record is created or updated automatically."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Loans",
+      "item": [
+        {
+          "name": "Apply for Loan",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loan_type\": \"personal\",\n  \"amount_requested\": 150000,\n  \"tenure_months\": 24,\n  \"purpose\": \"Medical expenses for family treatment\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/customer/loans/apply",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "customer", "loans", "apply"]
+            },
+            "description": "Submit a new loan application. Customer profile (KYC) must be complete and active before applying.\n\nValidation:\n- loan_type: required, one of: personal | home | business | vehicle | education\n- amount_requested: required, numeric, min:1000, max:10000000\n- tenure_months: required, integer, min:1, max:360\n- purpose: required, string, max:500"
+          },
+          "response": []
+        },
+        {
+          "name": "Loan History",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/customer/loans",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "customer", "loans"],
+              "query": [
+                { "key": "status", "value": "pending", "description": "optional filter: pending | under_review | approved | rejected | disbursed | closed", "disabled": true },
+                { "key": "loan_type", "value": "personal", "description": "optional filter: personal | home | business | vehicle | education", "disabled": true },
+                { "key": "per_page", "value": "10", "description": "optional, default 10, max 50", "disabled": true }
+              ]
+            },
+            "description": "Paginated list of customer's loan applications, ordered by applied_at desc. Includes document list per loan."
+          },
+          "response": []
+        },
+        {
+          "name": "Loan Status Tracking",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/customer/loans/1/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "customer", "loans", "1", "status"]
+            },
+            "description": "Full status tracking for a single loan. Returns loan details, status change timeline, and all uploaded documents with their review status.\n\nURL param: loanId (integer)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Documents",
+      "item": [
+        {
+          "name": "Upload Aadhaar",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "description": "required, jpg/jpeg/png/pdf, max 5MB",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/customer/loans/1/documents/aadhaar",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "customer", "loans", "1", "documents", "aadhaar"]
+            },
+            "description": "Upload Aadhaar document for a loan. Replaces any previously uploaded Aadhaar for the same loan.\n\nURL params: loanId (integer), type = aadhaar\nBody (form-data): file — mimes: jpg, jpeg, png, pdf — max 5MB"
+          },
+          "response": []
+        },
+        {
+          "name": "Upload PAN",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "description": "required, jpg/jpeg/png/pdf, max 5MB",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/customer/loans/1/documents/pan",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "customer", "loans", "1", "documents", "pan"]
+            },
+            "description": "Upload PAN document for a loan. Replaces any previously uploaded PAN for the same loan.\n\nURL params: loanId (integer), type = pan\nBody (form-data): file — mimes: jpg, jpeg, png, pdf — max 5MB"
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Selfie",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "description": "required, jpg/jpeg/png/pdf, max 5MB",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/customer/loans/1/documents/selfie",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "customer", "loans", "1", "documents", "selfie"]
+            },
+            "description": "Upload selfie for a loan. Replaces any previously uploaded selfie for the same loan.\n\nURL params: loanId (integer), type = selfie\nBody (form-data): file — mimes: jpg, jpeg, png, pdf — max 5MB"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "List Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/customer/notifications",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "customer", "notifications"]
+            },
+            "description": "Paginated list of notifications for the authenticated user (20 per page, latest first). Also returns current unread_count."
+          },
+          "response": []
+        },
+        {
+          "name": "Unread Count",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/customer/notifications/unread-count",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "customer", "notifications", "unread-count"]
+            },
+            "description": "Returns the total count of unread notifications for the authenticated user."
+          },
+          "response": []
+        },
+        {
+          "name": "Mark All Notifications Read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/customer/notifications/mark-all-read",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "customer", "notifications", "mark-all-read"]
+            },
+            "description": "Marks all unread notifications as read for the authenticated user."
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Single Notification Read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/customer/notifications/1/read",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "customer", "notifications", "1", "read"]
+            },
+            "description": "Marks a single notification as read. Returns 404 if it does not belong to the authenticated user.\n\nURL param: id (integer)"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
