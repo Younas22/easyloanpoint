@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') — EasyLoanPoint</title>
 <link rel="stylesheet" href="{{ asset('public/build/assets/app-CM0Fw6HD.css') }}">
-    <script src="{{ asset('public/build/assets/app-Baybx7-I.js') }}" defer></script>
+    <style>[x-cloak]{display:none!important}</style>
 </head>
 <body class="h-full bg-gray-50 font-sans antialiased">
 
@@ -65,6 +65,7 @@
         </div>
     </div>
 
+    <script src="{{ asset('public/build/assets/app-Baybx7-I.js') }}"></script>
     @stack('scripts')
 </body>
 </html>

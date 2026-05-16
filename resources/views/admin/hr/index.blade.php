@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'HR Management')
+@section('page-title', 'HR Management')
 
 @section('page-header')
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
