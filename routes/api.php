@@ -50,8 +50,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('customer')->name('api.customer.')->group(function () {
 
         // Profile
-        Route::get('/profile',  [ProfileController::class, 'show'])->name('profile.show');
-        Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+        Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
         // Loans
         Route::post('/loans/apply',                 [LoanController::class, 'apply'])->name('loans.apply');

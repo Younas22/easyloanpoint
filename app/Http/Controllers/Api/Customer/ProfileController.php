@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Api\Customer;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\UpdateProfileRequest;
 use App\Models\Customer;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class ProfileController extends Controller
 {
@@ -26,44 +26,108 @@ class ProfileController extends Controller
         ]);
     }
 
-    public function update(UpdateProfileRequest $request): JsonResponse
+    public function update(Request $request): JsonResponse
     {
-        $user = Auth::user();
+        $user  = Auth::user();
+        $input = $request->all();
 
-        $userFields = $request->only(['name', 'email']);
+        $validator = Validator::make($input, [
+            'name'             => ['sometimes', 'string', 'min:2', 'max:100'],
+            'email'            => ['sometimes', 'nullable', 'email', "unique:users,email,{$user->id}"],
+            'profile_image'    => ['sometimes', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+            'aadhaar_number'   => ['sometimes', 'digits:12'],
+            'aadhaar_document' => ['sometimes', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            'pan_number'       => ['sometimes', 'regex:/^[A-Z]{5}[0-9]{4}[A-Z]$/'],
+            'pan_document'     => ['sometimes', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            'selfie_document'  => ['sometimes', 'file', 'mimes:jpg,jpeg,png', 'max:2048'],
+            'address'          => ['sometimes', 'string', 'max:500'],
+            'city'             => ['sometimes', 'string', 'max:100'],
+            'state'            => ['sometimes', 'string', 'max:100'],
+            'pincode'          => ['sometimes', 'digits:6'],
+            'dob'              => ['sometimes', 'date', 'before:today'],
+            'gender'           => ['sometimes', 'in:male,female,other'],
+            'employment_type'  => ['sometimes', 'in:salaried,self_employed,business,unemployed'],
+            'salary'           => ['sometimes', 'nullable', 'numeric', 'min:0'],
+        ], [
+            'aadhaar_number.digits'  => 'Aadhaar number must be exactly 12 digits.',
+            'pan_number.regex'       => 'PAN number must be in format: ABCDE1234F.',
+            'pincode.digits'         => 'Pincode must be exactly 6 digits.',
+            'dob.before'             => 'Date of birth must be in the past.',
+            'profile_image.max'      => 'Profile image must not exceed 2MB.',
+            'aadhaar_document.max'   => 'Aadhaar document must not exceed 5MB.',
+            'pan_document.max'       => 'PAN document must not exceed 5MB.',
+            'selfie_document.max'    => 'Selfie must not exceed 2MB.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Validation errors.',
+                'errors'  => $validator->errors(),
+            ], 422);
+        }
+
+        // ── User fields (name, email, profile_image) ──────────────────────────
+
+        $userFields = array_filter([
+            'name'  => $input['name']  ?? null,
+            'email' => $input['email'] ?? null,
+        ], fn ($v) => ! is_null($v) && $v !== '');
 
         if ($request->hasFile('profile_image')) {
-            $dir = public_path("uploads/profiles/{$user->id}");
-
-            if (! file_exists($dir)) {
-                mkdir($dir, 0755, true);
-            }
-
-            $file     = $request->file('profile_image');
-            $filename = time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
-            $file->move($dir, $filename);
-
-            $userFields['profile_image'] = "uploads/profiles/{$user->id}/{$filename}";
+            $userFields['profile_image'] = $this->storeFile(
+                $request->file('profile_image'),
+                "uploads/profiles/{$user->id}"
+            );
         }
 
         if (! empty($userFields)) {
             $user->update($userFields);
         }
 
-        $kycFields = $request->only([
-            'aadhaar_number', 'pan_number', 'address', 'city',
-            'state', 'pincode', 'dob', 'gender', 'employment_type', 'salary',
-        ]);
+        // ── KYC text fields ───────────────────────────────────────────────────
+
+        $kycKeys   = ['aadhaar_number', 'pan_number', 'address', 'city', 'state', 'pincode', 'dob', 'gender', 'employment_type', 'salary'];
+        $kycFields = array_filter(
+            array_intersect_key($input, array_flip($kycKeys)),
+            fn ($v) => ! is_null($v) && $v !== ''
+        );
+
+        // ── KYC document files ────────────────────────────────────────────────
+
+        if ($request->hasFile('aadhaar_document')) {
+            $kycFields['aadhaar_document'] = $this->storeFile(
+                $request->file('aadhaar_document'),
+                "uploads/kyc/{$user->id}/aadhaar"
+            );
+        }
+
+        if ($request->hasFile('pan_document')) {
+            $kycFields['pan_document'] = $this->storeFile(
+                $request->file('pan_document'),
+                "uploads/kyc/{$user->id}/pan"
+            );
+        }
+
+        if ($request->hasFile('selfie_document')) {
+            $kycFields['selfie_document'] = $this->storeFile(
+                $request->file('selfie_document'),
+                "uploads/kyc/{$user->id}/selfie"
+            );
+        }
+
+        // ── Save customer record ──────────────────────────────────────────────
 
         $customer = null;
 
         if (! empty($kycFields)) {
+            $fresh    = $user->fresh();
             $customer = Customer::updateOrCreate(
                 ['user_id' => $user->id],
                 array_merge($kycFields, [
-                    'name'       => $user->fresh()->name,
-                    'phone'      => $user->phone,
-                    'email'      => $user->fresh()->email,
+                    'name'       => $fresh->name,
+                    'phone'      => $fresh->phone,
+                    'email'      => $fresh->email,
                     'status'     => 'active',
                     'created_by' => $user->id,
                 ])
@@ -78,6 +142,22 @@ class ProfileController extends Controller
         ]);
     }
 
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private function storeFile($file, string $subDir): string
+    {
+        $dir = public_path($subDir);
+
+        if (! file_exists($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        $filename = time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
+        $file->move($dir, $filename);
+
+        return "{$subDir}/{$filename}";
+    }
+
     private function formatUser($user): array
     {
         return [
@@ -85,7 +165,7 @@ class ProfileController extends Controller
             'name'           => $user->name,
             'email'          => $user->email,
             'phone'          => $user->phone,
-            'profile_image'  => $user->profile_image ? url("public/{$user->profile_image}") : null,
+            'profile_image'  => $user->profile_image ? asset($user->profile_image) : null,
             'phone_verified' => ! is_null($user->phone_verified_at),
             'role'           => $user->role,
             'status'         => $user->isActive(),
@@ -96,20 +176,23 @@ class ProfileController extends Controller
     private function formatCustomer(Customer $customer): array
     {
         return [
-            'id'              => $customer->id,
-            'aadhaar_number'  => $customer->masked_aadhaar,
-            'pan_number'      => $customer->pan_number,
-            'address'         => $customer->address,
-            'city'            => $customer->city,
-            'state'           => $customer->state,
-            'pincode'         => $customer->pincode,
-            'dob'             => $customer->dob?->toDateString(),
-            'gender'          => $customer->gender,
-            'employment_type' => $customer->employment_type,
-            'employment_label'=> $customer->employment_label,
-            'salary'          => $customer->salary ? (float) $customer->salary : null,
-            'status'          => $customer->status,
-            'status_label'    => $customer->status_label,
+            'id'                => $customer->id,
+            'aadhaar_number'    => $customer->masked_aadhaar,
+            'aadhaar_document'  => $customer->aadhaar_document ? asset($customer->aadhaar_document) : null,
+            'pan_number'        => $customer->pan_number,
+            'pan_document'      => $customer->pan_document ? asset($customer->pan_document) : null,
+            'selfie_document'   => $customer->selfie_document ? asset($customer->selfie_document) : null,
+            'address'           => $customer->address,
+            'city'              => $customer->city,
+            'state'             => $customer->state,
+            'pincode'           => $customer->pincode,
+            'dob'               => $customer->dob?->toDateString(),
+            'gender'            => $customer->gender,
+            'employment_type'   => $customer->employment_type,
+            'employment_label'  => $customer->employment_label,
+            'salary'            => $customer->salary ? (float) $customer->salary : null,
+            'status'            => $customer->status,
+            'status_label'      => $customer->status_label,
         ];
     }
 }

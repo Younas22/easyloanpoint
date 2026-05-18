@@ -10,7 +10,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Customer extends Model
 {
     protected $fillable = [
-        'user_id', 'name', 'email', 'phone', 'aadhaar_number', 'pan_number',
+        'user_id', 'name', 'email', 'phone',
+        'aadhaar_number', 'aadhaar_document',
+        'pan_number', 'pan_document', 'selfie_document',
         'address', 'city', 'state', 'pincode', 'dob', 'gender',
         'employment_type', 'salary', 'status', 'notes', 'created_by',
     ];

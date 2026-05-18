@@ -232,19 +232,22 @@
             "body": {
               "mode": "formdata",
               "formdata": [
-                { "key": "name", "value": "Rahul Sharma", "type": "text", "description": "optional, min:2, max:100" },
-                { "key": "email", "value": "rahul@example.com", "type": "text", "description": "optional, valid email" },
-                { "key": "profile_image", "type": "file", "description": "optional, jpg/jpeg/png, max 2MB", "src": [] },
-                { "key": "aadhaar_number", "value": "123456789012", "type": "text", "description": "optional, exactly 12 digits" },
-                { "key": "pan_number", "value": "ABCDE1234F", "type": "text", "description": "optional, format: ABCDE1234F" },
-                { "key": "address", "value": "123, MG Road, Pune", "type": "text", "description": "optional, max:500" },
-                { "key": "city", "value": "Pune", "type": "text", "description": "optional, max:100" },
-                { "key": "state", "value": "Maharashtra", "type": "text", "description": "optional, max:100" },
-                { "key": "pincode", "value": "411001", "type": "text", "description": "optional, exactly 6 digits" },
-                { "key": "dob", "value": "1995-06-15", "type": "text", "description": "optional, date before today (YYYY-MM-DD)" },
-                { "key": "gender", "value": "male", "type": "text", "description": "optional, one of: male | female | other" },
-                { "key": "employment_type", "value": "salaried", "type": "text", "description": "optional, one of: salaried | self_employed | business | unemployed" },
-                { "key": "salary", "value": "50000", "type": "text", "description": "optional, numeric, min:0" }
+                { "key": "name",             "value": "Rahul Sharma",        "type": "text", "description": "optional — min:2, max:100" },
+                { "key": "email",            "value": "rahul@example.com",   "type": "text", "description": "optional — valid email, unique" },
+                { "key": "profile_image",    "type": "file", "src": [],      "description": "optional — jpg/jpeg/png, max 2MB" },
+                { "key": "aadhaar_number",   "value": "123456789012",        "type": "text", "description": "optional — exactly 12 digits" },
+                { "key": "aadhaar_document", "type": "file", "src": [],      "description": "optional — jpg/jpeg/png/pdf, max 5MB" },
+                { "key": "pan_number",       "value": "ABCDE1234F",          "type": "text", "description": "optional — format: ABCDE1234F" },
+                { "key": "pan_document",     "type": "file", "src": [],      "description": "optional — jpg/jpeg/png/pdf, max 5MB" },
+                { "key": "selfie_document",  "type": "file", "src": [],      "description": "optional — jpg/jpeg/png, max 2MB" },
+                { "key": "address",          "value": "123, MG Road, Pune",  "type": "text", "description": "optional — max:500" },
+                { "key": "city",             "value": "Pune",                "type": "text", "description": "optional — max:100" },
+                { "key": "state",            "value": "Maharashtra",         "type": "text", "description": "optional — max:100" },
+                { "key": "pincode",          "value": "411001",              "type": "text", "description": "optional — exactly 6 digits" },
+                { "key": "dob",              "value": "1995-06-15",          "type": "text", "description": "optional — YYYY-MM-DD, before today" },
+                { "key": "gender",           "value": "male",                "type": "text", "description": "optional — male | female | other" },
+                { "key": "employment_type",  "value": "salaried",            "type": "text", "description": "optional — salaried | self_employed | business | unemployed" },
+                { "key": "salary",           "value": "50000",               "type": "text", "description": "optional — numeric, min:0" }
               ]
             },
             "url": {
@@ -252,7 +255,7 @@
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "customer", "profile"]
             },
-            "description": "Update user profile and/or KYC details. All fields are optional. Accepts multipart/form-data to support profile_image upload. KYC record is created or updated automatically."
+            "description": "Update customer profile, KYC details, and documents in a single request.\n\nMethod: PUT — Content-Type: multipart/form-data\n\nIMPORTANT: Do NOT manually add Content-Type in the Headers tab. Postman sets it automatically when body type is form-data.\n\nAll fields are optional — send only what needs to be updated.\n\nUser fields:\n- name, email, profile_image\n\nKYC text fields:\n- aadhaar_number, pan_number, address, city, state, pincode, dob, gender, employment_type, salary\n\nKYC documents (files):\n- aadhaar_document: Aadhaar card image/PDF\n- pan_document: PAN card image/PDF\n- selfie_document: Live selfie photo\n\nDocuments stored at: public/uploads/kyc/{user_id}/{type}/"
           },
           "response": []
         }
@@ -491,7 +494,7 @@
   "variable": [
     {
       "key": "base_url",
-      "value": "http://localhost:8000",
+      "value": "http://localhost/easyloanpoint/public",
       "type": "string"
     },
     {
