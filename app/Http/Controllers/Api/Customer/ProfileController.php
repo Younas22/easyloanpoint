@@ -85,7 +85,7 @@ class ProfileController extends Controller
             'name'           => $user->name,
             'email'          => $user->email,
             'phone'          => $user->phone,
-            'profile_image'  => $user->profile_image ? asset("public/{$user->profile_image}") : null,
+            'profile_image'  => $user->profile_image ? url("public/{$user->profile_image}") : null,
             'phone_verified' => ! is_null($user->phone_verified_at),
             'role'           => $user->role,
             'status'         => $user->isActive(),
