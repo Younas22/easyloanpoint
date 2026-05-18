@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
@@ -28,16 +29,18 @@ class ProfileController extends Controller
 
     public function update(Request $request): JsonResponse
     {
-        $user  = Auth::user();
-        $input = $request->all();
+        $user     = Auth::user();
+        $input    = $request->all();
+        $customer = Customer::where('user_id', $user->id)->first();
+        $custId   = $customer?->id;
 
         $validator = Validator::make($input, [
             'name'             => ['sometimes', 'string', 'min:2', 'max:100'],
-            'email'            => ['sometimes', 'nullable', 'email', "unique:users,email,{$user->id}"],
+            'email'            => ['sometimes', 'nullable', 'email', Rule::unique('users', 'email')->ignore($user->id)],
             'profile_image'    => ['sometimes', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
-            'aadhaar_number'   => ['sometimes', 'digits:12'],
+            'aadhaar_number'   => ['sometimes', 'digits:12', Rule::unique('customers', 'aadhaar_number')->ignore($custId)],
             'aadhaar_document' => ['sometimes', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
-            'pan_number'       => ['sometimes', 'regex:/^[A-Z]{5}[0-9]{4}[A-Z]$/'],
+            'pan_number'       => ['sometimes', 'regex:/^[A-Z]{5}[0-9]{4}[A-Z]$/i', Rule::unique('customers', 'pan_number')->ignore($custId)],
             'pan_document'     => ['sometimes', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
             'selfie_document'  => ['sometimes', 'file', 'mimes:jpg,jpeg,png', 'max:2048'],
             'address'          => ['sometimes', 'string', 'max:500'],
@@ -49,14 +52,16 @@ class ProfileController extends Controller
             'employment_type'  => ['sometimes', 'in:salaried,self_employed,business,unemployed'],
             'salary'           => ['sometimes', 'nullable', 'numeric', 'min:0'],
         ], [
-            'aadhaar_number.digits'  => 'Aadhaar number must be exactly 12 digits.',
-            'pan_number.regex'       => 'PAN number must be in format: ABCDE1234F.',
-            'pincode.digits'         => 'Pincode must be exactly 6 digits.',
-            'dob.before'             => 'Date of birth must be in the past.',
-            'profile_image.max'      => 'Profile image must not exceed 2MB.',
-            'aadhaar_document.max'   => 'Aadhaar document must not exceed 5MB.',
-            'pan_document.max'       => 'PAN document must not exceed 5MB.',
-            'selfie_document.max'    => 'Selfie must not exceed 2MB.',
+            'aadhaar_number.digits'   => 'Aadhaar number must be exactly 12 digits.',
+            'aadhaar_number.unique'   => 'This Aadhaar number is already registered.',
+            'pan_number.regex'        => 'PAN must be in format: ABCDE1234F.',
+            'pan_number.unique'       => 'This PAN number is already registered.',
+            'pincode.digits'          => 'Pincode must be exactly 6 digits.',
+            'dob.before'              => 'Date of birth must be in the past.',
+            'profile_image.max'       => 'Profile image must not exceed 2MB.',
+            'aadhaar_document.max'    => 'Aadhaar document must not exceed 5MB.',
+            'pan_document.max'        => 'PAN document must not exceed 5MB.',
+            'selfie_document.max'     => 'Selfie must not exceed 2MB.',
         ]);
 
         if ($validator->fails()) {
@@ -67,7 +72,7 @@ class ProfileController extends Controller
             ], 422);
         }
 
-        // ── User fields (name, email, profile_image) ──────────────────────────
+        // ── User fields ───────────────────────────────────────────────────────
 
         $userFields = array_filter([
             'name'  => $input['name']  ?? null,
@@ -85,7 +90,15 @@ class ProfileController extends Controller
             $user->update($userFields);
         }
 
-        // ── KYC text fields ───────────────────────────────────────────────────
+        // ── Normalize aadhaar and PAN before saving ───────────────────────────
+        if (isset($input['aadhaar_number'])) {
+            $input['aadhaar_number'] = preg_replace('/[\s\-]/', '', $input['aadhaar_number']);
+        }
+        if (isset($input['pan_number'])) {
+            $input['pan_number'] = strtoupper(trim($input['pan_number']));
+        }
+
+        // ── KYC fields ────────────────────────────────────────────────────────
 
         $kycKeys   = ['aadhaar_number', 'pan_number', 'address', 'city', 'state', 'pincode', 'dob', 'gender', 'employment_type', 'salary'];
         $kycFields = array_filter(
@@ -93,32 +106,15 @@ class ProfileController extends Controller
             fn ($v) => ! is_null($v) && $v !== ''
         );
 
-        // ── KYC document files ────────────────────────────────────────────────
-
-        if ($request->hasFile('aadhaar_document')) {
-            $kycFields['aadhaar_document'] = $this->storeFile(
-                $request->file('aadhaar_document'),
-                "uploads/kyc/{$user->id}/aadhaar"
-            );
+        foreach (['aadhaar_document', 'pan_document', 'selfie_document'] as $docKey) {
+            if ($request->hasFile($docKey)) {
+                $type = str_replace('_document', '', $docKey);
+                $kycFields[$docKey] = $this->storeFile(
+                    $request->file($docKey),
+                    "uploads/kyc/{$user->id}/{$type}"
+                );
+            }
         }
-
-        if ($request->hasFile('pan_document')) {
-            $kycFields['pan_document'] = $this->storeFile(
-                $request->file('pan_document'),
-                "uploads/kyc/{$user->id}/pan"
-            );
-        }
-
-        if ($request->hasFile('selfie_document')) {
-            $kycFields['selfie_document'] = $this->storeFile(
-                $request->file('selfie_document'),
-                "uploads/kyc/{$user->id}/selfie"
-            );
-        }
-
-        // ── Save customer record ──────────────────────────────────────────────
-
-        $customer = null;
 
         if (! empty($kycFields)) {
             $fresh    = $user->fresh();
@@ -128,8 +124,8 @@ class ProfileController extends Controller
                     'name'       => $fresh->name,
                     'phone'      => $fresh->phone,
                     'email'      => $fresh->email,
-                    'status'     => 'active',
-                    'created_by' => $user->id,
+                    'status'     => $customer?->status ?? 'active',
+                    'created_by' => $customer?->created_by ?? $user->id,
                 ])
             );
         } else {
@@ -176,23 +172,23 @@ class ProfileController extends Controller
     private function formatCustomer(Customer $customer): array
     {
         return [
-            'id'                => $customer->id,
-            'aadhaar_number'    => $customer->masked_aadhaar,
-            'aadhaar_document'  => $customer->aadhaar_document ? asset($customer->aadhaar_document) : null,
-            'pan_number'        => $customer->pan_number,
-            'pan_document'      => $customer->pan_document ? asset($customer->pan_document) : null,
-            'selfie_document'   => $customer->selfie_document ? asset($customer->selfie_document) : null,
-            'address'           => $customer->address,
-            'city'              => $customer->city,
-            'state'             => $customer->state,
-            'pincode'           => $customer->pincode,
-            'dob'               => $customer->dob?->toDateString(),
-            'gender'            => $customer->gender,
-            'employment_type'   => $customer->employment_type,
-            'employment_label'  => $customer->employment_label,
-            'salary'            => $customer->salary ? (float) $customer->salary : null,
-            'status'            => $customer->status,
-            'status_label'      => $customer->status_label,
+            'id'               => $customer->id,
+            'aadhaar_number'   => $customer->masked_aadhaar,   // masked: XXXX-XXXX-XXXX (last 4 visible)
+            'aadhaar_document' => $customer->aadhaar_document ? asset($customer->aadhaar_document) : null,
+            'pan_number'       => $customer->pan_number,
+            'pan_document'     => $customer->pan_document ? asset($customer->pan_document) : null,
+            'selfie_document'  => $customer->selfie_document ? asset($customer->selfie_document) : null,
+            'address'          => $customer->address,
+            'city'             => $customer->city,
+            'state'            => $customer->state,
+            'pincode'          => $customer->pincode,
+            'dob'              => $customer->dob?->toDateString(),
+            'gender'           => $customer->gender,
+            'employment_type'  => $customer->employment_type,
+            'employment_label' => $customer->employment_label,
+            'salary'           => $customer->salary ? (float) $customer->salary : null,
+            'status'           => $customer->status,
+            'status_label'     => $customer->status_label,
         ];
     }
 }
