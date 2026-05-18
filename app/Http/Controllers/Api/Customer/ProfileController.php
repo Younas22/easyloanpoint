@@ -32,6 +32,8 @@ class ProfileController extends Controller
         $user     = Auth::user();
         $input    = $request->all();
         $customer = Customer::where('user_id', $user->id)->first();
+
+        $this->logRequest($user, $request, $input);
         $custId   = $customer?->id;
 
         $validator = Validator::make($input, [
@@ -139,6 +141,32 @@ class ProfileController extends Controller
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private function logRequest($user, Request $request, array $input): void
+    {
+        $safeInput = array_diff_key($input, array_flip([
+            'profile_image', 'aadhaar_document', 'pan_document', 'selfie_document',
+        ]));
+
+        $entry = [
+            'time'            => now()->toDateTimeString(),
+            'user_id'         => $user->id,
+            'phone'           => $user->phone,
+            'method'          => $request->method(),
+            'content_type'    => $request->header('Content-Type'),
+            'fields_received' => array_keys($input),
+            'files_received'  => array_keys($request->allFiles()),
+            'data'            => $safeInput,
+        ];
+
+        $line = '[' . $entry['time'] . '] PROFILE_UPDATE ' . json_encode($entry, JSON_UNESCAPED_UNICODE) . PHP_EOL;
+
+        file_put_contents(
+            storage_path('logs/laravel.log'),
+            $line,
+            FILE_APPEND | LOCK_EX
+        );
+    }
 
     private function storeFile($file, string $subDir): string
     {
