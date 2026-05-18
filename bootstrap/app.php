@@ -18,6 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'hr'    => \App\Http\Middleware\HRMiddleware::class,
             'role'  => \App\Http\Middleware\RoleMiddleware::class,
         ]);
+
+        $middleware->appendToGroup('api', \App\Http\Middleware\ParseMultipartFormData::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

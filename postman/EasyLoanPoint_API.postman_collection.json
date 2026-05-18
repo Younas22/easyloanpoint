@@ -329,10 +329,10 @@
       ]
     },
     {
-      "name": "Documents",
+      "name": "Loan Documents",
       "item": [
         {
-          "name": "Upload Aadhaar",
+          "name": "Upload Loan Document (Aadhaar / PAN / Selfie)",
           "request": {
             "method": "POST",
             "header": [
@@ -345,73 +345,21 @@
                 {
                   "key": "file",
                   "type": "file",
-                  "description": "required, jpg/jpeg/png/pdf, max 5MB",
+                  "description": "required — jpg/jpeg/png/pdf, max 5MB",
                   "src": []
                 }
               ]
             },
             "url": {
-              "raw": "{{base_url}}/api/v1/customer/loans/1/documents/aadhaar",
+              "raw": "{{base_url}}/api/v1/customer/loans/:loanId/documents/:type",
               "host": ["{{base_url}}"],
-              "path": ["api", "v1", "customer", "loans", "1", "documents", "aadhaar"]
-            },
-            "description": "Upload Aadhaar document for a loan. Replaces any previously uploaded Aadhaar for the same loan.\n\nURL params: loanId (integer), type = aadhaar\nBody (form-data): file — mimes: jpg, jpeg, png, pdf — max 5MB"
-          },
-          "response": []
-        },
-        {
-          "name": "Upload PAN",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" },
-              { "key": "Accept", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "file",
-                  "type": "file",
-                  "description": "required, jpg/jpeg/png/pdf, max 5MB",
-                  "src": []
-                }
+              "path": ["api", "v1", "customer", "loans", ":loanId", "documents", ":type"],
+              "variable": [
+                { "key": "loanId", "value": "1", "description": "Loan ID" },
+                { "key": "type",   "value": "aadhaar", "description": "aadhaar | pan | selfie" }
               ]
             },
-            "url": {
-              "raw": "{{base_url}}/api/v1/customer/loans/1/documents/pan",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "customer", "loans", "1", "documents", "pan"]
-            },
-            "description": "Upload PAN document for a loan. Replaces any previously uploaded PAN for the same loan.\n\nURL params: loanId (integer), type = pan\nBody (form-data): file — mimes: jpg, jpeg, png, pdf — max 5MB"
-          },
-          "response": []
-        },
-        {
-          "name": "Upload Selfie",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" },
-              { "key": "Accept", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "file",
-                  "type": "file",
-                  "description": "required, jpg/jpeg/png/pdf, max 5MB",
-                  "src": []
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{base_url}}/api/v1/customer/loans/1/documents/selfie",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "customer", "loans", "1", "documents", "selfie"]
-            },
-            "description": "Upload selfie for a loan. Replaces any previously uploaded selfie for the same loan.\n\nURL params: loanId (integer), type = selfie\nBody (form-data): file — mimes: jpg, jpeg, png, pdf — max 5MB"
+            "description": "Upload a document for a specific loan application.\n\nNote: These are LOAN-level documents (per loan application). KYC identity documents (aadhaar_document, pan_document, selfie_document) are uploaded via PUT /customer/profile.\n\nURL params:\n- loanId: integer\n- type: aadhaar | pan | selfie\n\nBody (form-data):\n- file: required, jpg/jpeg/png/pdf, max 5MB"
           },
           "response": []
         }
