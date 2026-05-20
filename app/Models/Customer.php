@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Collection;
 
 class Customer extends Model
 {
@@ -55,6 +56,11 @@ class Customer extends Model
     public function currentAssignment(): HasOne
     {
         return $this->hasOne(CustomerAssignment::class)->latestOfMany();
+    }
+
+    public function bankAccounts(): HasMany
+    {
+        return $this->hasMany(CustomerBankAccount::class)->orderBy('sort_order');
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────

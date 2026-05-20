@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Models\CustomerBankAccount;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -24,6 +25,7 @@ class ProfileController extends Controller
             'user'         => $this->formatUser($user),
             'kyc'          => $customer ? $this->formatCustomer($customer) : null,
             'kyc_complete' => ! is_null($customer),
+            'bank_accounts' => $customer ? $this->formatBankAccounts($customer) : [],
         ]);
     }
 
@@ -53,17 +55,31 @@ class ProfileController extends Controller
             'gender'           => ['sometimes', 'in:male,female,other'],
             'employment_type'  => ['sometimes', 'in:salaried,self_employed,business,unemployed'],
             'salary'           => ['sometimes', 'nullable', 'numeric', 'min:0'],
+            // Bank account 1 (primary)
+            'bank1_name'           => ['sometimes', 'string', 'max:100'],
+            'bank1_account_number' => ['sometimes', 'string', 'regex:/^\d{6,20}$/'],
+            'bank1_ifsc_code'      => ['sometimes', 'regex:/^[A-Z]{4}0[A-Z0-9]{6}$/i'],
+            'bank1_holder_name'    => ['sometimes', 'string', 'max:100'],
+            // Bank account 2 (optional)
+            'bank2_name'           => ['sometimes', 'nullable', 'string', 'max:100'],
+            'bank2_account_number' => ['sometimes', 'nullable', 'string', 'regex:/^\d{6,20}$/'],
+            'bank2_ifsc_code'      => ['sometimes', 'nullable', 'regex:/^[A-Z]{4}0[A-Z0-9]{6}$/i'],
+            'bank2_holder_name'    => ['sometimes', 'nullable', 'string', 'max:100'],
         ], [
             'aadhaar_number.digits'   => 'Aadhaar number must be exactly 12 digits.',
             'aadhaar_number.unique'   => 'This Aadhaar number is already registered.',
             'pan_number.regex'        => 'PAN must be in format: ABCDE1234F.',
             'pan_number.unique'       => 'This PAN number is already registered.',
-            'pincode.digits'          => 'Pincode must be exactly 6 digits.',
-            'dob.before'              => 'Date of birth must be in the past.',
-            'profile_image.max'       => 'Profile image must not exceed 2MB.',
-            'aadhaar_document.max'    => 'Aadhaar document must not exceed 5MB.',
-            'pan_document.max'        => 'PAN document must not exceed 5MB.',
-            'selfie_document.max'     => 'Selfie must not exceed 2MB.',
+            'pincode.digits'                    => 'Pincode must be exactly 6 digits.',
+            'dob.before'                        => 'Date of birth must be in the past.',
+            'profile_image.max'                 => 'Profile image must not exceed 2MB.',
+            'aadhaar_document.max'              => 'Aadhaar document must not exceed 5MB.',
+            'pan_document.max'                  => 'PAN document must not exceed 5MB.',
+            'selfie_document.max'               => 'Selfie must not exceed 2MB.',
+            'bank1_account_number.regex'        => 'Account number must be 6–20 digits.',
+            'bank1_ifsc_code.regex'             => 'Invalid IFSC code (e.g. HDFC0001234).',
+            'bank2_account_number.regex'        => 'Account number must be 6–20 digits.',
+            'bank2_ifsc_code.regex'             => 'Invalid IFSC code (e.g. HDFC0001234).',
         ]);
 
         if ($validator->fails()) {
@@ -134,18 +150,55 @@ class ProfileController extends Controller
             $customer = Customer::where('user_id', $user->id)->first();
         }
 
+        // ── Bank accounts ─────────────────────────────────────────────────────
+
+        if ($customer) {
+            foreach ([1, 2] as $n) {
+                $bankName   = trim($input["bank{$n}_name"]           ?? '');
+                $accountNum = trim($input["bank{$n}_account_number"] ?? '');
+                $ifsc       = strtoupper(trim($input["bank{$n}_ifsc_code"] ?? ''));
+                $holder     = trim($input["bank{$n}_holder_name"]    ?? '');
+
+                if ($bankName !== '' || $accountNum !== '' || $ifsc !== '' || $holder !== '') {
+                    CustomerBankAccount::updateOrCreate(
+                        ['customer_id' => $customer->id, 'sort_order' => $n],
+                        [
+                            'bank_name'      => $bankName,
+                            'account_number' => $accountNum,
+                            'ifsc_code'      => $ifsc,
+                            'holder_name'    => $holder,
+                        ]
+                    );
+                }
+            }
+        }
+
         return $this->success('Profile updated successfully.', [
-            'user' => $this->formatUser($user->fresh()),
-            'kyc'  => $customer ? $this->formatCustomer($customer) : null,
+            'user'          => $this->formatUser($user->fresh()),
+            'kyc'           => $customer ? $this->formatCustomer($customer) : null,
+            'bank_accounts' => $customer ? $this->formatBankAccounts($customer->fresh()) : [],
         ]);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
+    private function formatBankAccounts(Customer $customer): array
+    {
+        return $customer->bankAccounts->map(fn ($b) => [
+            'id'             => $b->id,
+            'sort_order'     => $b->sort_order,
+            'bank_name'      => $b->bank_name,
+            'account_number' => $b->masked_account,
+            'ifsc_code'      => $b->ifsc_code,
+            'holder_name'    => $b->holder_name,
+        ])->values()->all();
+    }
+
     private function logRequest($user, Request $request, array $input): void
     {
         $safeInput = array_diff_key($input, array_flip([
             'profile_image', 'aadhaar_document', 'pan_document', 'selfie_document',
+            'bank1_account_number', 'bank2_account_number',
         ]));
 
         $entry = [

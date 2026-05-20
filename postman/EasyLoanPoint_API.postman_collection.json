@@ -217,7 +217,7 @@
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "customer", "profile"]
             },
-            "description": "Returns authenticated user's profile and KYC details. kyc is null if KYC not yet submitted."
+            "description": "Returns authenticated user's profile, KYC details, and bank accounts. kyc is null if KYC not yet submitted. bank_accounts is an empty array if none added."
           },
           "response": []
         },
@@ -247,7 +247,15 @@
                 { "key": "dob",              "value": "1995-06-15",          "type": "text", "description": "optional — YYYY-MM-DD, before today" },
                 { "key": "gender",           "value": "male",                "type": "text", "description": "optional — male | female | other" },
                 { "key": "employment_type",  "value": "salaried",            "type": "text", "description": "optional — salaried | self_employed | business | unemployed" },
-                { "key": "salary",           "value": "50000",               "type": "text", "description": "optional — numeric, min:0" }
+                { "key": "salary",           "value": "50000",               "type": "text", "description": "optional — numeric, min:0" },
+                { "key": "bank1_name",           "value": "HDFC Bank",       "type": "text", "description": "optional — primary bank name, max:100" },
+                { "key": "bank1_account_number", "value": "1234567890",      "type": "text", "description": "optional — 6–20 digits" },
+                { "key": "bank1_ifsc_code",      "value": "HDFC0001234",     "type": "text", "description": "optional — format: ABCD0123456 (11 chars)" },
+                { "key": "bank1_holder_name",    "value": "Rahul Sharma",    "type": "text", "description": "optional — name as per bank, max:100" },
+                { "key": "bank2_name",           "value": "SBI",             "type": "text", "description": "optional — second bank name (max 2 accounts)" },
+                { "key": "bank2_account_number", "value": "9876543210",      "type": "text", "description": "optional — 6–20 digits" },
+                { "key": "bank2_ifsc_code",      "value": "SBIN0001234",     "type": "text", "description": "optional — format: ABCD0123456 (11 chars)" },
+                { "key": "bank2_holder_name",    "value": "Rahul Sharma",    "type": "text", "description": "optional — name as per bank, max:100" }
               ]
             },
             "url": {
@@ -255,7 +263,7 @@
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "customer", "profile"]
             },
-            "description": "Update customer profile, KYC details, and documents in a single request.\n\nMethod: PUT — Content-Type: multipart/form-data\n\nIMPORTANT: Do NOT manually add Content-Type in the Headers tab. Postman sets it automatically when body type is form-data.\n\nAll fields are optional — send only what needs to be updated.\n\nUser fields:\n- name, email, profile_image\n\nKYC text fields:\n- aadhaar_number, pan_number, address, city, state, pincode, dob, gender, employment_type, salary\n\nKYC documents (files):\n- aadhaar_document: Aadhaar card image/PDF\n- pan_document: PAN card image/PDF\n- selfie_document: Live selfie photo\n\nDocuments stored at: public/uploads/kyc/{user_id}/{type}/"
+            "description": "Update customer profile, KYC details, documents, and bank accounts in a single request.\n\nMethod: PUT — Content-Type: multipart/form-data\n\nIMPORTANT: Do NOT manually add Content-Type in the Headers tab. Postman sets it automatically when body type is form-data.\n\nAll fields are optional — send only what needs to be updated.\n\nUser fields:\n- name, email, profile_image\n\nKYC text fields:\n- aadhaar_number, pan_number, address, city, state, pincode, dob, gender, employment_type, salary\n\nKYC documents (files):\n- aadhaar_document: Aadhaar card image/PDF\n- pan_document: PAN card image/PDF\n- selfie_document: Live selfie photo\n\nBank accounts (max 2 per customer):\n- bank1_name, bank1_account_number, bank1_ifsc_code, bank1_holder_name (primary)\n- bank2_name, bank2_account_number, bank2_ifsc_code, bank2_holder_name (optional)\n- IFSC format: 4 letters + 0 + 6 alphanumeric (e.g. HDFC0001234)\n- Account number: 6–20 digits\n- Response includes bank_accounts[] array with masked account numbers\n\nDocuments stored at: public/uploads/kyc/{user_id}/{type}/"
           },
           "response": []
         }
