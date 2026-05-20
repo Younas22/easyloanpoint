@@ -58,9 +58,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
         // Loans
-        Route::post('/loans/apply',                 [LoanController::class, 'apply'])->name('loans.apply');
-        Route::get('/loans',                        [LoanController::class, 'history'])->name('loans.history');
-        Route::get('/loans/{loanId}/status',        [LoanController::class, 'statusTracking'])->name('loans.status');
+        Route::post('/loans/apply',                      [LoanController::class, 'apply'])->name('loans.apply');
+        Route::get('/loans',                             [LoanController::class, 'history'])->name('loans.history');
+        Route::get('/loans/{loanId}/status',             [LoanController::class, 'statusTracking'])->name('loans.status');
+        Route::post('/loans/{loanId}/payment',           [LoanController::class, 'submitPayment'])->name('loans.payment.submit');
+        Route::get('/loans/{loanId}/payment',            [LoanController::class, 'getPayment'])->name('loans.payment.get');
+        Route::get('/settings/payment-bank',             [LoanController::class, 'paymentBank'])->name('settings.payment-bank');
 
         // Document uploads  (type constrained to aadhaar|pan|selfie)
         Route::post('/loans/{loanId}/documents/{type}', [LoanController::class, 'uploadDocument'])

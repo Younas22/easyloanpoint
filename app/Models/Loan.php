@@ -70,6 +70,16 @@ class Loan extends Model
         return $this->hasMany(LoanDocument::class);
     }
 
+    public function payments(): HasMany
+    {
+        return $this->hasMany(LoanPayment::class);
+    }
+
+    public function latestPayment(): HasMany
+    {
+        return $this->hasMany(LoanPayment::class)->latest();
+    }
+
     public function getEmiAmountAttribute(): ?float
     {
         if (!$this->amount_approved || !$this->interest_rate || !$this->tenure_months) {
@@ -107,6 +117,18 @@ class Loan extends Model
         };
     }
 
+    public function getReturnDateAttribute(): ?\Carbon\Carbon
+    {
+        if (! $this->applied_at) return null;
+        return $this->applied_at->copy()->addDays($this->repayment_days ?: 6);
+    }
+
+    public function getIsOverdueAttribute(): bool
+    {
+        return $this->return_date && now()->gt($this->return_date)
+            && ! in_array($this->status, ['rejected', 'closed']);
+    }
+
     public function getStatusLabelAttribute(): string
     {
         return match($this->status) {
@@ -115,6 +137,7 @@ class Loan extends Model
             'approved'     => 'Approved',
             'rejected'     => 'Rejected',
             'disbursed'    => 'Disbursed',
+            'closed'       => 'Closed',
             default        => ucfirst($this->status),
         };
     }

@@ -113,6 +113,7 @@
                         <th class="px-5 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
                         <th class="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Assigned HR</th>
                         <th class="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Applied</th>
+                        <th class="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Return Date</th>
                         <th class="px-5 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Actions</th>
                     </tr>
                 </thead>
@@ -125,6 +126,7 @@
                                 'approved'     => ['pill' => 'bg-green-100 text-green-700',  'dot' => 'bg-green-500'],
                                 'rejected'     => ['pill' => 'bg-red-100 text-red-700',      'dot' => 'bg-red-500'],
                                 'disbursed'    => ['pill' => 'bg-purple-100 text-purple-700','dot' => 'bg-purple-500'],
+                                'closed'       => ['pill' => 'bg-gray-100 text-gray-600',   'dot' => 'bg-gray-500'],
                             ];
                             $sm = $statusMap[$loan->status] ?? ['pill' => 'bg-gray-100 text-gray-600', 'dot' => 'bg-gray-400'];
                         @endphp
@@ -174,6 +176,18 @@
                             </td>
                             <td class="whitespace-nowrap px-5 py-4 text-xs text-gray-500">
                                 {{ $loan->applied_at?->format('d M Y') ?? '—' }}
+                            </td>
+                            <td class="whitespace-nowrap px-5 py-4 text-xs">
+                                @if($loan->return_date)
+                                    @if($loan->is_overdue)
+                                        <span class="font-semibold text-red-600">{{ $loan->return_date->format('d M Y') }}</span>
+                                        <span class="block text-red-400">{{ now()->diffForHumans($loan->return_date, true) }} overdue</span>
+                                    @else
+                                        <span class="text-gray-700">{{ $loan->return_date->format('d M Y') }}</span>
+                                    @endif
+                                @else
+                                    <span class="text-gray-400">—</span>
+                                @endif
                             </td>
                             <td class="whitespace-nowrap px-5 py-4 text-right">
                                 <div class="flex items-center justify-end gap-1.5">

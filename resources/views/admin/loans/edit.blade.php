@@ -88,13 +88,14 @@
 
                 <div>
                     <label class="mb-1.5 block text-sm font-medium text-gray-700">
-                        Tenure (Months) <span class="text-red-500">*</span>
+                        Repayment Days <span class="text-red-500">*</span>
                     </label>
-                    <input type="number" name="tenure_months"
-                           value="{{ old('tenure_months', $loan->tenure_months) }}"
-                           min="1" max="360"
-                           class="w-full rounded-lg border @error('tenure_months') border-red-400 @else border-gray-300 @enderror py-2.5 px-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                    @error('tenure_months')
+                    <input type="number" name="repayment_days"
+                           value="{{ old('repayment_days', $loan->repayment_days ?: 6) }}"
+                           min="1" max="3650"
+                           class="w-full rounded-lg border @error('repayment_days') border-red-400 @else border-gray-300 @enderror py-2.5 px-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <p class="mt-1 text-xs text-gray-400">Return date = Applied date + repayment days</p>
+                    @error('repayment_days')
                         <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                     @enderror
                 </div>

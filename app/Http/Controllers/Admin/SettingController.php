@@ -23,7 +23,7 @@ class SettingController extends Controller
     public function update(Request $request, string $group): JsonResponse
     {
         abort_unless(
-            in_array($group, ['general','loan','apk','smtp','sms','notifications','homepage','security']),
+            in_array($group, ['general','loan','bank','apk','smtp','sms','notifications','homepage','security']),
             404
         );
 
@@ -32,6 +32,7 @@ class SettingController extends Controller
         match ($group) {
             'general'       => $this->saveGeneral($request, $validated),
             'loan'          => $this->saveLoan($validated),
+            'bank'          => $this->saveBank($validated),
             'apk'           => $this->saveApk($request, $validated),
             'smtp'          => $this->saveSmtp($validated),
             'sms'           => $this->saveSms($request, $validated),
@@ -69,6 +70,11 @@ class SettingController extends Controller
     private function saveLoan(array $data): void
     {
         $this->service->saveMany($data, 'loan');
+    }
+
+    private function saveBank(array $data): void
+    {
+        $this->service->saveMany($data, 'bank');
     }
 
     private function saveApk(Request $request, array $data): void
@@ -138,6 +144,12 @@ class SettingController extends Controller
                 'support_email' => ['required', 'email', 'max:100'],
                 'support_phone' => ['required', 'string', 'max:20'],
                 'address'       => ['nullable', 'string', 'max:500'],
+            ],
+            'bank' => [
+                'payment_bank_name'      => ['required', 'string', 'max:100'],
+                'payment_account_number' => ['required', 'string', 'max:30'],
+                'payment_ifsc_code'      => ['required', 'regex:/^[A-Z]{4}0[A-Z0-9]{6}$/i'],
+                'payment_holder_name'    => ['required', 'string', 'max:100'],
             ],
             'loan' => [
                 'min_loan_amount'       => ['required', 'numeric', 'min:1'],

@@ -74,6 +74,7 @@ Route::middleware(['auth', 'admin'])
         // Loan Management
         Route::resource('loans', AdminLoanController::class);
         Route::patch('loans/{loan}/status',                          [AdminLoanController::class, 'updateStatus'])->name('loans.update-status');
+        Route::patch('loans/{loan}/approve-payment',                 [AdminLoanController::class, 'approvePayment'])->name('loans.approve-payment');
         Route::post('loans/{loan}/documents',                        [AdminLoanController::class, 'uploadDocument'])->name('loans.upload-document');
         Route::patch('loans/{loan}/documents/{document}/verify',     [AdminLoanController::class, 'verifyDocument'])->name('loans.verify-document');
 

@@ -9,6 +9,7 @@ use App\Http\Requests\Admin\UpdateLoanStatusRequest;
 use App\Models\Customer;
 use App\Models\Loan;
 use App\Models\LoanDocument;
+use App\Models\LoanPayment;
 use App\Models\User;
 use App\Services\ActivityLogService;
 use App\Services\NotificationService;
@@ -92,10 +93,42 @@ class LoanController extends Controller
             'assignedHR',
             'statusHistories' => fn ($q) => $q->with('changedBy')->oldest(),
             'documents.verifiedBy',
+            'payments',
         ]);
         $hrUsers = User::where('role', 'hr')->where('status', true)->orderBy('name')->get();
+        $payment = $loan->payments->first();
 
-        return view('admin.loans.show', compact('loan', 'hrUsers'));
+        return view('admin.loans.show', compact('loan', 'hrUsers', 'payment'));
+    }
+
+    public function approvePayment(Loan $loan)
+    {
+        $payment = LoanPayment::where('loan_id', $loan->id)
+            ->where('status', 'pending')->first();
+
+        if (! $payment) {
+            return back()->with('error', 'No pending payment found for this loan.');
+        }
+
+        DB::transaction(function () use ($loan, $payment) {
+            $fromStatus = $loan->status;
+
+            $payment->update([
+                'status'      => 'approved',
+                'approved_at' => now(),
+            ]);
+
+            $loan->update(['status' => 'closed']);
+
+            $loan->statusHistories()->create([
+                'changed_by'  => auth()->id(),
+                'from_status' => $fromStatus,
+                'to_status'   => 'closed',
+                'remarks'     => 'Payment approved by admin.',
+            ]);
+        });
+
+        return back()->with('success', 'Payment approved. Loan is now closed.');
     }
 
     public function edit(Loan $loan)

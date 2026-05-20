@@ -8,6 +8,8 @@ use App\Http\Requests\Api\UploadDocumentRequest;
 use App\Models\Customer;
 use App\Models\Loan;
 use App\Models\LoanDocument;
+use App\Models\LoanPayment;
+use App\Models\Setting;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,6 +18,90 @@ use Illuminate\Support\Facades\Auth;
 class LoanController extends Controller
 {
     use ApiResponse;
+
+    public function paymentBank(): JsonResponse
+    {
+        return $this->success('Payment bank details retrieved.', [
+            'bank' => [
+                'bank_name'      => Setting::get('payment_bank_name', ''),
+                'account_number' => Setting::get('payment_account_number', ''),
+                'ifsc_code'      => Setting::get('payment_ifsc_code', ''),
+                'holder_name'    => Setting::get('payment_holder_name', ''),
+            ],
+        ]);
+    }
+
+    public function submitPayment(Request $request, int $loanId): JsonResponse
+    {
+        $user     = Auth::user();
+        $customer = Customer::where('user_id', $user->id)->first();
+
+        if (! $customer) return $this->notFound('Loan not found.');
+
+        $loan = Loan::where('id', $loanId)->where('customer_id', $customer->id)->first();
+        if (! $loan) return $this->notFound('Loan not found.');
+
+        if ($loan->status !== 'approved') {
+            return $this->error('Payment can only be submitted for approved loans.', 422);
+        }
+
+        $existing = LoanPayment::where('loan_id', $loanId)
+            ->whereIn('status', ['pending', 'approved'])->first();
+        if ($existing) {
+            return $this->error('A payment has already been submitted for this loan.', 422);
+        }
+
+        if (! $request->hasFile('screenshot')) {
+            return $this->error('Please upload a payment screenshot.', 422);
+        }
+
+        $file    = $request->file('screenshot');
+        $dir     = public_path("uploads/payments/{$loan->id}");
+        if (! file_exists($dir)) mkdir($dir, 0755, true);
+        $filename = time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
+        $file->move($dir, $filename);
+        $path = "uploads/payments/{$loan->id}/{$filename}";
+
+        $payment = LoanPayment::create([
+            'loan_id'         => $loan->id,
+            'customer_id'     => $customer->id,
+            'screenshot_path' => $path,
+            'status'          => 'pending',
+        ]);
+
+        return $this->success('Payment submitted successfully. Admin will verify within 24 hours.', [
+            'payment' => $this->formatPayment($payment),
+        ], 201);
+    }
+
+    public function getPayment(int $loanId): JsonResponse
+    {
+        $user     = Auth::user();
+        $customer = Customer::where('user_id', $user->id)->first();
+
+        if (! $customer) return $this->notFound('Loan not found.');
+
+        $loan = Loan::where('id', $loanId)->where('customer_id', $customer->id)->first();
+        if (! $loan) return $this->notFound('Loan not found.');
+
+        $payment = LoanPayment::where('loan_id', $loanId)->latest()->first();
+
+        return $this->success('Payment retrieved.', [
+            'payment' => $payment ? $this->formatPayment($payment) : null,
+        ]);
+    }
+
+    private function formatPayment(LoanPayment $payment): array
+    {
+        return [
+            'id'          => $payment->id,
+            'status'      => $payment->status,
+            'screenshot'  => asset($payment->screenshot_path),
+            'admin_notes' => $payment->admin_notes,
+            'submitted_at'=> $payment->created_at->toISOString(),
+            'approved_at' => $payment->approved_at?->toISOString(),
+        ];
+    }
 
     public function apply(ApplyLoanRequest $request): JsonResponse
     {
@@ -30,12 +116,24 @@ class LoanController extends Controller
             return $this->error('Your account is not active. Please contact support.', 403);
         }
 
+        $existingLoan = Loan::where('customer_id', $customer->id)
+            ->whereNotIn('status', ['rejected', 'closed'])
+            ->first();
+        if ($existingLoan) {
+            return $this->error(
+                'You already have an active loan application. Please wait for it to be completed before applying again.',
+                422
+            );
+        }
+
         $loan = Loan::create([
             'customer_id'      => $customer->id,
-            'loan_type'        => $request->loan_type,
+            'loan_type_id'     => $request->loan_type_id ?? null,
+            'loan_type'        => $request->loan_type ?? 'personal',
             'amount_requested' => $request->amount_requested,
-            'tenure_months'    => $request->tenure_months,
-            'purpose'          => $request->purpose,
+            'repayment_days'   => $request->repayment_days ?? 6,
+            'tenure_months'    => 1,
+            'purpose'          => $request->purpose ?? 'Easy Loan',
             'status'           => 'pending',
             'applied_at'       => now(),
         ]);
@@ -204,6 +302,8 @@ class LoanController extends Controller
             'status_label'     => $loan->status_label,
             'remarks'          => $loan->remarks,
             'applied_at'       => $loan->applied_at?->toISOString(),
+            'return_date'      => $loan->return_date?->toDateString(),
+            'is_overdue'       => $loan->is_overdue,
             'reviewed_at'      => $loan->reviewed_at?->toISOString(),
             'disbursed_at'     => $loan->disbursed_at?->toISOString(),
         ];

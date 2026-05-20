@@ -294,7 +294,7 @@
       "name": "Loans",
       "item": [
         {
-          "name": "Apply for Loan",
+          "name": "Apply for Loan (by Loan Type)",
           "request": {
             "method": "POST",
             "header": [
@@ -304,7 +304,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"loan_type\": \"personal\",\n  \"amount_requested\": 150000,\n  \"tenure_months\": 24,\n  \"purpose\": \"Medical expenses for family treatment\"\n}",
+              "raw": "{\n  \"loan_type_id\": 1,\n  \"loan_type\": \"personal\",\n  \"amount_requested\": 3000,\n  \"repayment_days\": 6,\n  \"tenure_months\": 1,\n  \"purpose\": \"Easy Loan\"\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": {
@@ -312,7 +312,65 @@
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "customer", "loans", "apply"]
             },
-            "description": "Submit a new loan application. Customer profile (KYC) must be complete and active before applying.\n\nValidation:\n- loan_type: required, one of: personal | home | business | vehicle | education\n- amount_requested: required, numeric, min:1000, max:10000000\n- tenure_months: required, integer, min:1, max:360\n- purpose: required, string, max:500"
+            "description": "Submit a new loan application. Customer must have no existing active loan.\n\nAuto-apply happens when profile is completed. This endpoint can also be called manually.\n\nError 422 if customer already has an active/pending loan.\n\nFields:\n- loan_type_id: optional, from GET /loan-types\n- loan_type: personal | home | business | vehicle | education\n- amount_requested: numeric\n- repayment_days: integer (default 6)\n- tenure_months: integer\n- purpose: string"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Payment Bank Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/customer/settings/payment-bank",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "customer", "settings", "payment-bank"]
+            },
+            "description": "Returns admin bank details for loan repayment. Shown in app Re Payment screen.\n\nResponse: data.bank { bank_name, account_number, ifsc_code, holder_name }"
+          },
+          "response": []
+        },
+        {
+          "name": "Submit Payment Screenshot",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "screenshot", "type": "file", "src": [], "description": "required — payment screenshot, jpg/png" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/customer/loans/1/payment",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "customer", "loans", "1", "payment"],
+              "variable": [{ "key": "loanId", "value": "1", "description": "Loan ID" }]
+            },
+            "description": "Upload payment screenshot for an approved loan. Returns 422 if:\n- Loan is not in 'approved' status\n- Payment already submitted (pending or approved)\n\nAdmin approves via PATCH /admin/loans/{id}/approve-payment which closes the loan."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Payment Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/customer/loans/1/payment",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "customer", "loans", "1", "payment"]
+            },
+            "description": "Get latest payment for a loan. Returns null if none submitted.\n\nResponse: data.payment { id, status, screenshot, admin_notes, submitted_at, approved_at }"
           },
           "response": []
         },

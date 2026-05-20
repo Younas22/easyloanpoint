@@ -83,13 +83,21 @@
                     </p>
                 </div>
                 <div>
-                    <p class="text-xs font-medium text-gray-500">Tenure</p>
-                    <p class="mt-1 text-sm font-medium text-gray-900">
-                        {{ $loan->tenure_months }} months
-                        @if($loan->tenure_months >= 12)
-                            <span class="text-gray-400">({{ round($loan->tenure_months / 12, 1) }} yrs)</span>
-                        @endif
-                    </p>
+                    <p class="text-xs font-medium text-gray-500">Repayment Days</p>
+                    <p class="mt-1 text-sm font-medium text-gray-900">{{ $loan->repayment_days ?? 6 }} days</p>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-gray-500">Return Date</p>
+                    @if($loan->return_date)
+                        <p class="mt-1 text-sm font-semibold {{ $loan->is_overdue ? 'text-red-600' : 'text-gray-900' }}">
+                            {{ $loan->return_date->format('d M Y') }}
+                            @if($loan->is_overdue)
+                                <span class="ml-1 text-xs font-normal text-red-400">(overdue)</span>
+                            @endif
+                        </p>
+                    @else
+                        <p class="mt-1 text-sm text-gray-400">—</p>
+                    @endif
                 </div>
                 @if($loan->purpose)
                     <div class="col-span-2 sm:col-span-3">
@@ -290,6 +298,67 @@
                 </div>
             @endif
         </div>
+
+        {{-- Payment Proof --}}
+        @if($payment)
+        <div class="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+            <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+                <div class="flex items-center gap-2">
+                    <svg class="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <h2 class="text-sm font-semibold text-gray-800">Payment Proof</h2>
+                </div>
+                @if($payment->status === 'pending')
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
+                        <span class="h-1.5 w-1.5 rounded-full bg-yellow-500"></span>Pending Review
+                    </span>
+                @elseif($payment->status === 'approved')
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                        <span class="h-1.5 w-1.5 rounded-full bg-green-500"></span>Approved
+                    </span>
+                @endif
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <p class="text-xs font-medium text-gray-500">Submitted At</p>
+                        <p class="mt-1 text-gray-800">{{ $payment->created_at->format('d M Y, h:i A') }}</p>
+                    </div>
+                    @if($payment->approved_at)
+                        <div>
+                            <p class="text-xs font-medium text-gray-500">Approved At</p>
+                            <p class="mt-1 text-green-600 font-medium">{{ $payment->approved_at->format('d M Y, h:i A') }}</p>
+                        </div>
+                    @endif
+                </div>
+                {{-- Screenshot preview --}}
+                <div>
+                    <p class="mb-2 text-xs font-medium text-gray-500">Payment Screenshot</p>
+                    <a href="{{ asset('public/' . $payment->screenshot_path) }}" target="_blank"
+                       class="inline-block overflow-hidden rounded-xl border border-gray-200 hover:opacity-90 transition-opacity">
+                        <img src="{{ asset('public/' . $payment->screenshot_path) }}"
+                             alt="Payment Screenshot"
+                             class="max-h-72 w-auto object-contain">
+                    </a>
+                    <p class="mt-1 text-xs text-gray-400">Click to open full size</p>
+                </div>
+                @if($payment->status === 'pending' && $loan->status === 'approved')
+                    <form method="POST" action="{{ route('admin.loans.approve-payment', $loan) }}"
+                          onsubmit="return confirm('Approve this payment and close the loan?')">
+                        @csrf @method('PATCH')
+                        <button type="submit"
+                                class="inline-flex items-center gap-2 rounded-xl bg-green-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-green-700 transition-colors">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Approve Payment &amp; Close Loan
+                        </button>
+                    </form>
+                @endif
+            </div>
+        </div>
+        @endif
 
         {{-- Status Timeline --}}
         <div class="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">

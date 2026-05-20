@@ -35,6 +35,7 @@
                 $tabs = [
                     ['id' => 'general',       'label' => 'General',        'icon' => 'globe'],
                     ['id' => 'loan',          'label' => 'Loan',           'icon' => 'currency'],
+                    ['id' => 'bank',          'label' => 'Payment Bank',   'icon' => 'bank'],
                     ['id' => 'apk',           'label' => 'APK / App',      'icon' => 'device'],
                     ['id' => 'smtp',          'label' => 'SMTP Email',     'icon' => 'mail'],
                     ['id' => 'sms',           'label' => 'SMS / OTP',      'icon' => 'chat'],
@@ -56,6 +57,8 @@
                                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
                                 @elseif($tab['icon'] === 'currency')
                                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                @elseif($tab['icon'] === 'bank')
+                                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/></svg>
                                 @elseif($tab['icon'] === 'device')
                                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
                                 @elseif($tab['icon'] === 'mail')
@@ -248,6 +251,59 @@
                         <button type="submit" class="s-btn-save">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                             Save Loan Settings
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        {{-- ════ TAB 3 — Payment Bank Settings ════ --}}
+        <div id="panel-bank" class="tab-panel hidden">
+            <form class="settings-form" action="{{ route('admin.settings.update', 'bank') }}" method="POST">
+                @csrf
+                <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+                    <div class="border-b border-gray-100 px-6 py-4">
+                        <h2 class="text-base font-semibold text-gray-900">Payment Bank Details</h2>
+                        <p class="text-sm text-gray-500">These bank details are shown to customers in the app for loan repayment.</p>
+                    </div>
+                    <div class="px-6 py-6 space-y-5">
+
+                        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                            <div>
+                                <label class="s-label">Bank Name <span class="text-red-500">*</span></label>
+                                <input type="text" name="payment_bank_name" value="{{ $settings['payment_bank_name'] ?? '' }}"
+                                       class="s-input" placeholder="e.g. HDFC Bank" required>
+                            </div>
+                            <div>
+                                <label class="s-label">Account Holder Name <span class="text-red-500">*</span></label>
+                                <input type="text" name="payment_holder_name" value="{{ $settings['payment_holder_name'] ?? '' }}"
+                                       class="s-input" placeholder="Name as per bank records" required>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                            <div>
+                                <label class="s-label">Account Number <span class="text-red-500">*</span></label>
+                                <input type="text" name="payment_account_number" value="{{ $settings['payment_account_number'] ?? '' }}"
+                                       class="s-input" placeholder="Enter account number" required>
+                            </div>
+                            <div>
+                                <label class="s-label">IFSC Code <span class="text-red-500">*</span></label>
+                                <input type="text" name="payment_ifsc_code" value="{{ $settings['payment_ifsc_code'] ?? '' }}"
+                                       class="s-input" placeholder="e.g. HDFC0001234" maxlength="11" style="text-transform:uppercase" required>
+                                <p class="mt-1 text-xs text-gray-400">Format: 4 letters + 0 + 6 alphanumeric (e.g. HDFC0001234)</p>
+                            </div>
+                        </div>
+
+                        <div class="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                            <strong>Note:</strong> Customers will see these details in the app when they tap "Re Payment". After they upload a screenshot, you will approve it in the loan details to close the loan.
+                        </div>
+
+                    </div>
+                    <div class="border-t border-gray-100 px-6 py-4">
+                        <button type="submit" class="s-btn-save">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                            Save Bank Settings
                         </button>
                     </div>
                 </div>
