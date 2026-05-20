@@ -5,14 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str; // kept for potential future use
 
 class Loan extends Model
 {
     protected $fillable = [
-        'customer_id', 'assigned_hr_id', 'loan_number', 'loan_type',
+        'customer_id', 'assigned_hr_id', 'loan_number', 'loan_type_id', 'loan_type',
         'amount_requested', 'amount_approved', 'interest_rate',
-        'tenure_months', 'purpose', 'status', 'remarks',
+        'tenure_months', 'repayment_days', 'purpose', 'status', 'remarks',
         'applied_at', 'reviewed_at', 'disbursed_at',
     ];
 
@@ -44,6 +43,11 @@ class Loan extends Model
         $latest = static::where('loan_number', 'like', $prefix . '%')->max('loan_number');
         $seq    = $latest ? ((int) substr($latest, strlen($prefix)) + 1) : 1;
         return $prefix . str_pad($seq, 6, '0', STR_PAD_LEFT);
+    }
+
+    public function loanType(): BelongsTo
+    {
+        return $this->belongsTo(LoanType::class);
     }
 
     public function customer(): BelongsTo
@@ -117,13 +121,16 @@ class Loan extends Model
 
     public function getLoanTypeLabelAttribute(): string
     {
+        if ($this->relationLoaded('loanType') && $this->loanType) {
+            return $this->loanType->name;
+        }
         return match($this->loan_type) {
             'personal'  => 'Personal Loan',
             'home'      => 'Home Loan',
             'business'  => 'Business Loan',
             'vehicle'   => 'Vehicle Loan',
             'education' => 'Education Loan',
-            default     => ucfirst($this->loan_type),
+            default     => $this->loan_type ? ucfirst(str_replace('_', ' ', $this->loan_type)) : '—',
         };
     }
 }

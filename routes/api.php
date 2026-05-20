@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Customer\LoanController;
 use App\Http\Controllers\Api\Customer\NotificationController as ApiNotificationController;
 use App\Http\Controllers\Api\Customer\ProfileController;
+use App\Http\Controllers\Api\LoanTypeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -23,6 +24,9 @@ Route::prefix('auth')->name('api.auth.')->group(function () {
     Route::post('/reset-password',  [AuthController::class, 'resetPassword'])->name('reset-password');
     Route::post('/resend-otp',      [AuthController::class, 'resendOtp'])->name('resend-otp');
 });
+
+// ── Public: Loan types (active, visible to app) ───────────────────────────────
+Route::get('/loan-types', [LoanTypeController::class, 'index'])->name('api.loan-types');
 
 // ── Protected routes (Sanctum token required) ─────────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {

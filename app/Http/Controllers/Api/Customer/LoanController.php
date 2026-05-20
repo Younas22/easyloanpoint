@@ -117,7 +117,7 @@ class LoanController extends Controller
             ]);
         }
 
-        $query = Loan::with('documents')
+        $query = Loan::with(['documents', 'loanType'])
             ->where('customer_id', $customer->id)
             ->orderByDesc('applied_at');
 
@@ -152,7 +152,7 @@ class LoanController extends Controller
             return $this->notFound('Loan not found.');
         }
 
-        $loan = Loan::with(['statusHistories', 'documents'])
+        $loan = Loan::with(['statusHistories', 'documents', 'loanType'])
             ->where('id', $loanId)
             ->where('customer_id', $customer->id)
             ->first();
@@ -189,8 +189,10 @@ class LoanController extends Controller
         return [
             'id'               => $loan->id,
             'loan_number'      => $loan->loan_number,
+            'loan_type_id'     => $loan->loan_type_id,
             'loan_type'        => $loan->loan_type,
-            'loan_type_label'  => $loan->loan_type_label,
+            'loan_type_label'  => $loan->loanType?->name ?? $loan->loan_type_label,
+            'repayment_days'   => $loan->repayment_days,
             'amount_requested' => (float) $loan->amount_requested,
             'amount_approved'  => $loan->amount_approved ? (float) $loan->amount_approved : null,
             'interest_rate'    => $loan->interest_rate ? (float) $loan->interest_rate : null,

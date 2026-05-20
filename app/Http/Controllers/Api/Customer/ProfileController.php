@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\Customer;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\CustomerBankAccount;
+use App\Models\Loan;
+use App\Models\LoanType;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -173,6 +175,26 @@ class ProfileController extends Controller
             }
         }
 
+        // ── Auto-apply Easy Loan on first complete profile ────────────────────
+
+        if ($customer && $this->isProfileComplete($customer->fresh())) {
+            $easyLoan = LoanType::active()->first();
+            if ($easyLoan && ! Loan::where('customer_id', $customer->id)
+                    ->where('loan_type_id', $easyLoan->id)->exists()) {
+                Loan::create([
+                    'customer_id'      => $customer->id,
+                    'loan_type_id'     => $easyLoan->id,
+                    'loan_type'        => 'personal',
+                    'amount_requested' => $easyLoan->amount,
+                    'repayment_days'   => $easyLoan->repayment_days,
+                    'tenure_months'    => 1,
+                    'purpose'          => $easyLoan->name,
+                    'status'           => 'pending',
+                    'applied_at'       => now(),
+                ]);
+            }
+        }
+
         return $this->success('Profile updated successfully.', [
             'user'          => $this->formatUser($user->fresh()),
             'kyc'           => $customer ? $this->formatCustomer($customer) : null,
@@ -181,6 +203,14 @@ class ProfileController extends Controller
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private function isProfileComplete(Customer $customer): bool
+    {
+        foreach (['aadhaar_number', 'pan_number', 'address', 'city', 'state', 'pincode', 'dob', 'gender', 'employment_type'] as $field) {
+            if (empty($customer->$field)) return false;
+        }
+        return true;
+    }
 
     private function formatBankAccounts(Customer $customer): array
     {

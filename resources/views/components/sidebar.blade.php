@@ -8,6 +8,7 @@
         ['route' => 'admin.hr.index',         'label' => 'HR Management',    'icon' => 'users',      'prefix' => 'admin.hr'],
         ['route' => 'admin.customers.index',  'label' => 'Customers',        'icon' => 'user-group', 'prefix' => 'admin.customers'],
         ['route' => 'admin.loans.index',      'label' => 'Loan Applications','icon' => 'document',   'prefix' => 'admin.loans'],
+        ['route' => 'admin.loan-types.index', 'label' => 'Loan Types',       'icon' => 'tag',        'prefix' => 'admin.loan-types'],
         ['route' => 'admin.assignments.index', 'label' => 'Assignments',      'icon' => 'link',       'prefix' => 'admin.assignments'],
         ['route' => 'notifications.index',   'label' => 'Notifications',    'icon' => 'bell',       'prefix' => 'notifications'],
         ['route' => 'admin.reports.index',    'label' => 'Reports',          'icon' => 'chart',      'prefix' => 'admin.reports'],
@@ -105,6 +106,10 @@
                             @elseif($item['icon'] === 'user')
                                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="h-4 w-4">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                            @elseif($item['icon'] === 'tag')
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
                                 </svg>
                             @elseif($item['icon'] === 'bell')
                                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="h-4 w-4">

@@ -180,6 +180,27 @@
       ]
     },
     {
+      "name": "Loan Types",
+      "item": [
+        {
+          "name": "Get Active Loan Types",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/loan-types",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "loan-types"]
+            },
+            "description": "Public endpoint — no auth required. Returns all active loan types configured by admin.\n\nResponse: data.loan_types[]\n- id, name, description, amount, repayment_days\n\nOnly types with status=active are returned, ordered by sort_order then id.\n\nAuto-apply: when a customer completes their profile (KYC + all required fields), the system automatically creates a pending loan application for the first active loan type."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "User",
       "item": [
         {
