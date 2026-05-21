@@ -66,6 +66,26 @@
         </p>
 
         <ul class="space-y-0.5">
+
+            {{-- Permissions — super_admin only, uses same static classes as other items --}}
+            @if($isSuperAdmin)
+                @php $isPermActive = str_starts_with($current ?? '', 'admin.permissions'); @endphp
+                <li>
+                    <a href="{{ route('admin.permissions.index') }}"
+                       class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors
+                              {{ $isPermActive ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                        <span class="flex h-5 w-5 flex-shrink-0 items-center justify-center">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                            </svg>
+                        </span>
+                        Permissions
+                        <span class="ml-auto rounded-full bg-yellow-500 px-1.5 py-0.5 text-xs font-bold text-slate-900">SA</span>
+                    </a>
+                </li>
+                <li class="my-1 mx-3 border-t border-slate-700"></li>
+            @endif
+
             @foreach($navItems as $item)
                 @php
                     $isActive = str_starts_with($current ?? '', $item['prefix']);
@@ -132,23 +152,6 @@
             @endforeach
         </ul>
     </nav>
-
-    {{-- Permissions button (super_admin only) --}}
-    @if($isSuperAdmin)
-        <div class="border-t border-slate-700 px-3 py-3">
-            @php $isPermActive = str_starts_with($current ?? '', 'admin.permissions'); @endphp
-            <a href="{{ route('admin.permissions.index') }}"
-               class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors
-                      {{ $isPermActive ? 'bg-yellow-500 text-white' : 'text-yellow-400 hover:bg-slate-800 hover:text-yellow-300' }}">
-                <span class="flex h-5 w-5 flex-shrink-0 items-center justify-center">
-                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="h-4 w-4">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                    </svg>
-                </span>
-                Permissions
-            </a>
-        </div>
-    @endif
 
     {{-- User profile at bottom --}}
     <div class="border-t border-slate-700 p-4">

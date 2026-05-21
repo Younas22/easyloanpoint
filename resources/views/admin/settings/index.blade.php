@@ -33,25 +33,27 @@
             <p class="px-4 pt-4 pb-2 text-xs font-semibold uppercase tracking-widest text-gray-400">Settings</p>
             @php
                 $tabs = [
-                    ['id' => 'general',       'label' => 'General',        'icon' => 'globe'],
-                    ['id' => 'loan',          'label' => 'Loan',           'icon' => 'currency'],
-                    ['id' => 'bank',          'label' => 'Payment Bank',   'icon' => 'bank'],
-                    ['id' => 'apk',           'label' => 'APK / App',      'icon' => 'device'],
-                    ['id' => 'smtp',          'label' => 'SMTP Email',     'icon' => 'mail'],
-                    ['id' => 'sms',           'label' => 'SMS / OTP',      'icon' => 'chat'],
-                    ['id' => 'notifications', 'label' => 'Notifications',  'icon' => 'bell'],
-                    ['id' => 'homepage',      'label' => 'Homepage',       'icon' => 'home'],
-                    ['id' => 'security',      'label' => 'Security',       'icon' => 'shield'],
+                    ['id' => 'general',       'label' => 'General',        'icon' => 'globe',     'show' => false],
+                    ['id' => 'loan',          'label' => 'Loan',           'icon' => 'currency',  'show' => true],
+                    ['id' => 'bank',          'label' => 'Payment Bank',   'icon' => 'bank',      'show' => false],
+                    ['id' => 'apk',           'label' => 'APK / App',      'icon' => 'device',    'show' => false],
+                    ['id' => 'smtp',          'label' => 'SMTP Email',     'icon' => 'mail',      'show' => true],
+                    ['id' => 'sms',           'label' => 'SMS / OTP',      'icon' => 'chat',      'show' => false],
+                    ['id' => 'notifications', 'label' => 'Notifications',  'icon' => 'bell',      'show' => true],
+                    ['id' => 'homepage',      'label' => 'Homepage',       'icon' => 'home',      'show' => false],
+                    ['id' => 'security',      'label' => 'Security',       'icon' => 'shield',    'show' => true],
                 ];
             @endphp
             <ul class="pb-3">
+                @php $firstVisible = true; @endphp
                 @foreach($tabs as $tab)
-                    <li>
+                    <li @if(!($tab['show'] ?? true)) style="display:none" @endif>
                         <button type="button"
                                 data-tab="{{ $tab['id'] }}"
                                 onclick="switchTab('{{ $tab['id'] }}')"
                                 class="tab-btn group flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors
-                                       {{ $loop->first ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                                       {{ ($tab['show'] ?? true) && $firstVisible ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                        @if(($tab['show'] ?? true) && $firstVisible) @php $firstVisible = false; @endphp @endif
                             <span class="flex h-5 w-5 flex-shrink-0 items-center justify-center">
                                 @if($tab['icon'] === 'globe')
                                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
@@ -85,7 +87,7 @@
     <div class="flex-1 min-w-0">
 
         {{-- ════ TAB 1 — General Settings ════ --}}
-        <div id="panel-general" class="tab-panel">
+        <div id="panel-general" class="tab-panel hidden">
             <form class="settings-form" action="{{ route('admin.settings.update', 'general') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
@@ -186,7 +188,7 @@
         </div>
 
         {{-- ════ TAB 2 — Loan Settings ════ --}}
-        <div id="panel-loan" class="tab-panel hidden">
+        <div id="panel-loan" class="tab-panel">
             <form class="settings-form" action="{{ route('admin.settings.update', 'loan') }}" method="POST">
                 @csrf
                 <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
