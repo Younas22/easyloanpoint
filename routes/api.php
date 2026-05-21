@@ -28,6 +28,19 @@ Route::prefix('auth')->name('api.auth.')->group(function () {
 // ── Public: Loan types (active, visible to app) ───────────────────────────────
 Route::get('/loan-types', [LoanTypeController::class, 'index'])->name('api.loan-types');
 
+// ── Public: Support / help settings ──────────────────────────────────────────
+Route::get('/settings/support', function () {
+    return response()->json([
+        'status' => true,
+        'data'   => [
+            'support_phone' => \App\Models\Setting::get('support_phone', ''),
+            'support_email' => \App\Models\Setting::get('support_email', ''),
+            'company_name'  => \App\Models\Setting::get('company_name', 'EasyLoanPoint'),
+            'address'       => \App\Models\Setting::get('address', ''),
+        ],
+    ]);
+})->name('api.settings.support');
+
 // ── Protected routes (Sanctum token required) ─────────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {
 
