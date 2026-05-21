@@ -184,7 +184,7 @@ class ProfileController extends Controller
                 Loan::create([
                     'customer_id'      => $customer->id,
                     'loan_type_id'     => $easyLoan->id,
-                    'loan_type'        => 'personal',
+                    'loan_type'        => $easyLoan->name,
                     'amount_requested' => $easyLoan->amount,
                     'repayment_days'   => $easyLoan->repayment_days,
                     'tenure_months'    => 1,
