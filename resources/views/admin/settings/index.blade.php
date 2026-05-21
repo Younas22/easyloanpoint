@@ -33,15 +33,15 @@
             <p class="px-4 pt-4 pb-2 text-xs font-semibold uppercase tracking-widest text-gray-400">Settings</p>
             @php
                 $tabs = [
-                    ['id' => 'general',       'label' => 'General',        'icon' => 'globe',     'show' => false],
-                    ['id' => 'loan',          'label' => 'Loan',           'icon' => 'currency',  'show' => true],
-                    ['id' => 'bank',          'label' => 'Payment Bank',   'icon' => 'bank',      'show' => false],
-                    ['id' => 'apk',           'label' => 'APK / App',      'icon' => 'device',    'show' => false],
-                    ['id' => 'smtp',          'label' => 'SMTP Email',     'icon' => 'mail',      'show' => true],
-                    ['id' => 'sms',           'label' => 'SMS / OTP',      'icon' => 'chat',      'show' => false],
-                    ['id' => 'notifications', 'label' => 'Notifications',  'icon' => 'bell',      'show' => true],
-                    ['id' => 'homepage',      'label' => 'Homepage',       'icon' => 'home',      'show' => false],
-                    ['id' => 'security',      'label' => 'Security',       'icon' => 'shield',    'show' => true],
+                    ['id' => 'general',       'label' => 'General',        'icon' => 'globe',     'show' => true],
+                    ['id' => 'loan',          'label' => 'Loan',           'icon' => 'currency',  'show' => false],
+                    ['id' => 'bank',          'label' => 'Payment Bank',   'icon' => 'bank',      'show' => true],
+                    ['id' => 'apk',           'label' => 'APK / App',      'icon' => 'device',    'show' => true],
+                    ['id' => 'smtp',          'label' => 'SMTP Email',     'icon' => 'mail',      'show' => false],
+                    ['id' => 'sms',           'label' => 'SMS / OTP',      'icon' => 'chat',      'show' => true],
+                    ['id' => 'notifications', 'label' => 'Notifications',  'icon' => 'bell',      'show' => false],
+                    ['id' => 'homepage',      'label' => 'Homepage',       'icon' => 'home',      'show' => true],
+                    ['id' => 'security',      'label' => 'Security',       'icon' => 'shield',    'show' => false],
                 ];
             @endphp
             <ul class="pb-3">
@@ -87,7 +87,7 @@
     <div class="flex-1 min-w-0">
 
         {{-- ════ TAB 1 — General Settings ════ --}}
-        <div id="panel-general" class="tab-panel hidden">
+        <div id="panel-general" class="tab-panel">
             <form class="settings-form" action="{{ route('admin.settings.update', 'general') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
@@ -188,7 +188,7 @@
         </div>
 
         {{-- ════ TAB 2 — Loan Settings ════ --}}
-        <div id="panel-loan" class="tab-panel">
+        <div id="panel-loan" class="tab-panel hidden">
             <form class="settings-form" action="{{ route('admin.settings.update', 'loan') }}" method="POST">
                 @csrf
                 <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
