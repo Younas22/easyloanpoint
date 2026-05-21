@@ -85,9 +85,14 @@ class SettingController extends Controller
         ], 'apk');
 
         if ($request->hasFile('apk_file')) {
-            $old = Setting::get('apk_file');
-            if ($old) $this->service->deleteFile($old);
-            Setting::set('apk_file', $this->service->upload($request->file('apk_file'), 'downloads'), 'apk');
+            $this->service->deleteFile(Setting::get('apk_file'));
+
+            $dir = public_path('downloads');
+            if (! \Illuminate\Support\Facades\File::exists($dir)) {
+                \Illuminate\Support\Facades\File::makeDirectory($dir, 0755, true);
+            }
+            $request->file('apk_file')->move($dir, 'easyloanpoint.apk');
+            Setting::set('apk_file', 'downloads/easyloanpoint.apk', 'apk');
         }
     }
 

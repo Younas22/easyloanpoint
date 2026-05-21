@@ -3,23 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EasyLoanPoint — Fast & Trusted Loans in India</title>
-    <meta name="description" content="Apply for personal loans, home loans, and business loans instantly with EasyLoanPoint. Track your application in real-time via our mobile app.">
+    <title>{{ $settings['website_name'] ?? 'EasyLoanPoint' }} — Fast & Trusted Loans in India</title>
+    <meta name="description" content="Apply for personal loans, home loans, and business loans instantly. Track your application in real-time via our mobile app.">
+
+    {{-- Favicon from settings --}}
+    @if(!empty($settings['favicon']))
+        <link rel="icon" type="image/png" href="{{ asset('public/' . $settings['favicon']) }}">
+    @endif
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        brand: {
-                            50:  '#eff6ff',
-                            100: '#dbeafe',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                            800: '#1e40af',
-                            900: '#1e3a8a',
-                        }
+                        brand: { 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a' }
                     }
                 }
             }
@@ -27,61 +25,60 @@
     </script>
     <style>
         html { scroll-behavior: smooth; }
-        .gradient-hero { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #0ea5e9 100%); }
-        .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
-        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.12); }
+        .gradient-hero { background: linear-gradient(135deg, #0D2258 0%, #1457FB 52%, #0A3FD6 100%); }
+        .card-hover { transition: transform .2s ease, box-shadow .2s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,.12); }
+        .phone-shadow { filter: drop-shadow(0 24px 48px rgba(20,87,251,.35)); }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans antialiased">
 
-{{-- ═══════════════════════════════════════════════════════════
-     NAVBAR
-════════════════════════════════════════════════════════════ --}}
+{{-- ══════════════════ NAVBAR ══════════════════ --}}
 <nav class="bg-white shadow-sm sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
+
             {{-- Logo --}}
             <div class="flex items-center gap-3">
-                <div class="w-9 h-9 bg-blue-700 rounded-lg flex items-center justify-center">
-                    <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                </div>
-                <span class="text-xl font-bold text-gray-900">EasyLoan<span class="text-blue-700">Point</span></span>
+                @if(!empty($settings['company_logo']))
+                    <img src="{{ asset('public/' . $settings['company_logo']) }}"
+                         alt="{{ $settings['company_name'] ?? 'EasyLoanPoint' }}"
+                         class="h-9 w-9 rounded-lg object-cover">
+                @else
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center"
+                         style="background:linear-gradient(135deg,#0D2258,#1457FB)">
+                        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
+                        </svg>
+                    </div>
+                @endif
+                <span class="text-xl font-bold text-gray-900">{{ $settings['website_name'] ?? 'EasyLoanPoint' }}</span>
             </div>
 
             {{-- Nav links --}}
             <div class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
-                <a href="#features" class="hover:text-blue-700 transition-colors">Features</a>
+                <a href="#features"    class="hover:text-blue-700 transition-colors">Features</a>
                 <a href="#how-it-works" class="hover:text-blue-700 transition-colors">How it Works</a>
-                <a href="#download" class="hover:text-blue-700 transition-colors">Download App</a>
+                <a href="#screenshots" class="hover:text-blue-700 transition-colors">App</a>
+                <a href="#download"    class="hover:text-blue-700 transition-colors">Download</a>
             </div>
 
             {{-- CTA --}}
-            <div class="flex items-center gap-3">
-                <a href="{{ route('login') }}"
-                   class="text-sm font-medium text-blue-700 hover:text-blue-800 transition-colors">
-                    Staff Login
-                </a>
-                <a href="#download"
-                   class="hidden sm:inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-                    </svg>
-                    Get App
-                </a>
-            </div>
+            <a href="#download"
+               class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                </svg>
+                Get App
+            </a>
         </div>
     </div>
 </nav>
 
-{{-- ═══════════════════════════════════════════════════════════
-     HERO
-════════════════════════════════════════════════════════════ --}}
+{{-- ══════════════════ HERO ══════════════════ --}}
 <section class="gradient-hero text-white py-20 sm:py-28">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+
         @if(session('error'))
             <div class="mb-8 inline-flex items-center gap-2 bg-red-100 text-red-800 text-sm px-4 py-2 rounded-full">
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -94,20 +91,29 @@
         <span class="inline-block bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full mb-6 tracking-wider uppercase">
             Fast • Trusted • Transparent
         </span>
+
         <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
-            Loans Made Simple<br>
-            <span class="text-blue-200">For Every Indian</span>
+            @if(!empty($settings['hero_title']))
+                {!! nl2br(e($settings['hero_title'])) !!}
+            @else
+                Loans Made Simple<br><span class="text-blue-200">For Every Indian</span>
+            @endif
         </h1>
+
         <p class="text-lg sm:text-xl text-blue-100 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Apply for personal, home, or business loans in minutes.
-            Track your application status in real-time — right from your phone.
+            @if(!empty($settings['hero_subtitle']))
+                {{ $settings['hero_subtitle'] }}
+            @else
+                Apply for personal, home, or business loans in minutes.
+                Track your application status in real-time — right from your phone.
+            @endif
         </p>
+
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="#download"
                class="inline-flex items-center justify-center gap-2 bg-white text-blue-700 font-bold px-8 py-4 rounded-xl shadow-lg hover:bg-blue-50 transition-colors text-base">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                 </svg>
                 Download Android App
             </a>
@@ -119,75 +125,52 @@
     </div>
 </section>
 
-{{-- ═══════════════════════════════════════════════════════════
-     STATS STRIP
-════════════════════════════════════════════════════════════ --}}
+{{-- ══════════════════ STATS ══════════════════ --}}
 <section class="bg-white border-b border-gray-100">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
-                <p class="text-3xl font-extrabold text-blue-700">₹50L+</p>
-                <p class="text-sm text-gray-500 mt-1">Loans Disbursed</p>
-            </div>
-            <div>
-                <p class="text-3xl font-extrabold text-blue-700">1,200+</p>
-                <p class="text-sm text-gray-500 mt-1">Happy Customers</p>
-            </div>
-            <div>
-                <p class="text-3xl font-extrabold text-blue-700">24 hrs</p>
-                <p class="text-sm text-gray-500 mt-1">Avg. Approval Time</p>
-            </div>
-            <div>
-                <p class="text-3xl font-extrabold text-blue-700">100%</p>
-                <p class="text-sm text-gray-500 mt-1">Online Process</p>
-            </div>
+            <div><p class="text-3xl font-extrabold text-blue-700">₹50L+</p><p class="text-sm text-gray-500 mt-1">Loans Disbursed</p></div>
+            <div><p class="text-3xl font-extrabold text-blue-700">1,200+</p><p class="text-sm text-gray-500 mt-1">Happy Customers</p></div>
+            <div><p class="text-3xl font-extrabold text-blue-700">24 hrs</p><p class="text-sm text-gray-500 mt-1">Avg. Approval Time</p></div>
+            <div><p class="text-3xl font-extrabold text-blue-700">100%</p><p class="text-sm text-gray-500 mt-1">Online Process</p></div>
         </div>
     </div>
 </section>
 
-{{-- ═══════════════════════════════════════════════════════════
-     FEATURES
-════════════════════════════════════════════════════════════ --}}
+{{-- ══════════════════ FEATURES ══════════════════ --}}
 <section id="features" class="py-20 bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-14">
-            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4">Why Choose EasyLoanPoint?</h2>
-            <p class="text-lg text-gray-500 max-w-2xl mx-auto">
-                Everything you need to apply, track, and manage your loan — in one place.
-            </p>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4">Why Choose {{ $settings['website_name'] ?? 'EasyLoanPoint' }}?</h2>
+            <p class="text-lg text-gray-500 max-w-2xl mx-auto">Everything you need to apply, track, and manage your loan — in one place.</p>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-
             @php
             $features = [
-                ['icon' => 'M13 10V3L4 14h7v7l9-11h-7z', 'title' => 'Instant Application', 'desc' => 'Fill out your loan application online in under 5 minutes. No paperwork, no branch visits.'],
-                ['icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'title' => 'Real-Time Tracking', 'desc' => 'Track every step of your loan journey — from submission to disbursement — via our mobile app.'],
+                ['icon' => 'M13 10V3L4 14h7v7l9-11h-7z',                       'title' => 'Instant Application',   'desc' => 'Fill out your loan application online in under 5 minutes. No paperwork, no branch visits.'],
+                ['icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',    'title' => 'Real-Time Tracking',     'desc' => 'Track every step of your loan journey — from submission to disbursement — via our mobile app.'],
                 ['icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'title' => 'Digital KYC', 'desc' => 'Upload Aadhaar, PAN, and selfie directly from your phone. Secure and fully digital verification.'],
                 ['icon' => 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z', 'title' => 'Bank-Level Security', 'desc' => 'Your data is protected with enterprise-grade encryption and secure API authentication.'],
                 ['icon' => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z', 'title' => 'Dedicated HR Support', 'desc' => 'Every application is assigned a dedicated loan officer who guides you through the process.'],
-                ['icon' => 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z', 'title' => 'Multiple Loan Types', 'desc' => 'Personal loans, home loans, business loans — choose what fits your needs with flexible EMI options.'],
+                ['icon' => 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z', 'title' => 'Multiple Loan Types', 'desc' => 'Personal, home, business loans — flexible EMI options to fit your needs.'],
             ];
             @endphp
-
             @foreach($features as $f)
             <div class="bg-white rounded-2xl p-7 shadow-sm border border-gray-100 card-hover">
                 <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-5">
-                    <svg class="w-6 h-6 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $f['icon'] }}"/>
+                    <svg class="w-6 h-6 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="{{ $f['icon'] }}"/>
                     </svg>
                 </div>
                 <h3 class="text-lg font-bold text-gray-900 mb-2">{{ $f['title'] }}</h3>
                 <p class="text-sm text-gray-500 leading-relaxed">{{ $f['desc'] }}</p>
             </div>
             @endforeach
-
         </div>
     </div>
 </section>
 
-{{-- ═══════════════════════════════════════════════════════════
-     HOW IT WORKS
-════════════════════════════════════════════════════════════ --}}
+{{-- ══════════════════ HOW IT WORKS ══════════════════ --}}
 <section id="how-it-works" class="py-20 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-14">
@@ -197,15 +180,16 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             @php
             $steps = [
-                ['num' => '01', 'title' => 'Download App', 'desc' => 'Install the EasyLoanPoint Android app on your phone.'],
-                ['num' => '02', 'title' => 'Register & KYC', 'desc' => 'Create your account and complete Aadhaar + PAN verification.'],
-                ['num' => '03', 'title' => 'Apply for Loan', 'desc' => 'Fill out the loan application form and submit your documents.'],
-                ['num' => '04', 'title' => 'Get Disbursed', 'desc' => 'Approved funds are transferred directly to your bank account.'],
+                ['num' => '01', 'title' => 'Download App',    'desc' => 'Install the EasyLoanPoint Android app on your phone.'],
+                ['num' => '02', 'title' => 'Register & KYC',  'desc' => 'Create your account and complete Aadhaar + PAN verification.'],
+                ['num' => '03', 'title' => 'Apply for Loan',  'desc' => 'Fill out the loan application and submit your documents.'],
+                ['num' => '04', 'title' => 'Get Disbursed',   'desc' => 'Approved funds are transferred directly to your bank account.'],
             ];
             @endphp
             @foreach($steps as $step)
             <div class="text-center">
-                <div class="w-14 h-14 bg-blue-700 text-white rounded-2xl flex items-center justify-center text-xl font-extrabold mx-auto mb-4">
+                <div class="w-14 h-14 text-white rounded-2xl flex items-center justify-center text-xl font-extrabold mx-auto mb-4"
+                     style="background:linear-gradient(135deg,#0D2258,#1457FB)">
                     {{ $step['num'] }}
                 </div>
                 <h3 class="text-lg font-bold text-gray-900 mb-2">{{ $step['title'] }}</h3>
@@ -216,9 +200,60 @@
     </div>
 </section>
 
-{{-- ═══════════════════════════════════════════════════════════
-     APK DOWNLOAD SECTION
-════════════════════════════════════════════════════════════ --}}
+{{-- ══════════════════ APP SCREENSHOTS ══════════════════ --}}
+<section id="screenshots" class="py-20 bg-gray-50 overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-14">
+            <span class="inline-block bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-wider">Mobile App</span>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4">See the App in Action</h2>
+            <p class="text-lg text-gray-500 max-w-xl mx-auto">
+                @if(!empty($settings['download_section']))
+                    {{ $settings['download_section'] }}
+                @else
+                    A clean, easy-to-use mobile app to manage all your loans from your phone.
+                @endif
+            </p>
+        </div>
+
+        {{-- 3 phone screenshots --}}
+        <div class="flex flex-col sm:flex-row items-end justify-center gap-6 lg:gap-10">
+
+            {{-- Screen 1 — slightly tilted left --}}
+            <div class="phone-shadow transform -rotate-3 hover:rotate-0 transition-transform duration-300 flex-shrink-0">
+                <div class="w-52 sm:w-56 rounded-3xl overflow-hidden border-4 border-white shadow-2xl">
+                    <img src="{{ asset('public/uploads/1.jpeg') }}" alt="App Welcome Screen" class="w-full object-cover">
+                </div>
+            </div>
+
+            {{-- Screen 2 — center, elevated --}}
+            <div class="phone-shadow -mb-6 sm:scale-110 flex-shrink-0 z-10">
+                <div class="w-52 sm:w-60 rounded-3xl overflow-hidden border-4 border-white shadow-2xl">
+                    <img src="{{ asset('public/uploads/2.jpeg') }}" alt="App Dashboard" class="w-full object-cover">
+                </div>
+            </div>
+
+            {{-- Screen 3 — slightly tilted right --}}
+            <div class="phone-shadow transform rotate-3 hover:rotate-0 transition-transform duration-300 flex-shrink-0">
+                <div class="w-52 sm:w-56 rounded-3xl overflow-hidden border-4 border-white shadow-2xl">
+                    <img src="{{ asset('public/uploads/3.jpeg') }}" alt="App Loan List" class="w-full object-cover">
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+{{-- ══════════════════ ABOUT ══════════════════ --}}
+@if(!empty($settings['about_section']))
+<section class="py-20 bg-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-6">About Us</h2>
+        <p class="text-lg text-gray-600 leading-relaxed whitespace-pre-line">{{ $settings['about_section'] }}</p>
+    </div>
+</section>
+@endif
+
+{{-- ══════════════════ DOWNLOAD ══════════════════ --}}
 <section id="download" class="py-20 gradient-hero">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
@@ -230,17 +265,16 @@
                         Android App
                     </span>
                     <h2 class="text-3xl font-extrabold text-gray-900 mb-4 leading-tight">
-                        Download the<br>EasyLoanPoint App
+                        Download the<br>{{ $settings['website_name'] ?? 'EasyLoanPoint' }} App
                     </h2>
                     <p class="text-gray-500 text-sm leading-relaxed mb-8">
                         Manage your loan applications, upload documents, and track approval status — all from your Android phone. Free to download.
                     </p>
 
-                    {{-- App Meta --}}
                     <div class="flex flex-wrap gap-4 mb-8">
                         <div class="bg-gray-50 rounded-xl px-4 py-3 text-center">
                             <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Version</p>
-                            <p class="font-bold text-gray-800 text-sm">1.0.0</p>
+                            <p class="font-bold text-gray-800 text-sm">{{ $settings['apk_version'] ?? '1.0.0' }}</p>
                         </div>
                         <div class="bg-gray-50 rounded-xl px-4 py-3 text-center">
                             <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Updated</p>
@@ -252,12 +286,11 @@
                         </div>
                     </div>
 
-                    {{-- Download Button --}}
                     <a href="{{ route('download.apk') }}"
-                       class="inline-flex items-center gap-3 bg-blue-700 hover:bg-blue-800 text-white font-bold px-8 py-4 rounded-xl shadow-lg transition-colors text-base w-full sm:w-auto justify-center">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                       class="inline-flex items-center gap-3 text-white font-bold px-8 py-4 rounded-xl shadow-lg transition-colors text-base w-full sm:w-auto justify-center"
+                       style="background:linear-gradient(135deg,#0D2258,#1457FB)">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                         </svg>
                         Download Android APK
                     </a>
@@ -267,26 +300,24 @@
                 {{-- Right: Install Instructions --}}
                 <div class="bg-gray-50 p-10 lg:p-12 border-t lg:border-t-0 lg:border-l border-gray-100">
                     <h3 class="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
-                        <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
                         How to Install APK on Android
                     </h3>
                     <ol class="space-y-5">
                         @php
-                        $steps = [
-                            ['title' => 'Download the APK', 'desc' => 'Tap the "Download Android APK" button and save the file to your phone.'],
-                            ['title' => 'Allow Unknown Sources', 'desc' => 'Go to Settings → Security → Enable "Install from Unknown Sources" (or "Install Unknown Apps" on Android 8+).'],
-                            ['title' => 'Open the APK File', 'desc' => 'Navigate to your Downloads folder and tap "EasyLoanPoint.apk" to begin installation.'],
-                            ['title' => 'Install & Launch', 'desc' => 'Tap "Install" and wait for it to complete. Open the app and register with your mobile number.'],
+                        $installSteps = [
+                            ['title' => 'Download the APK',        'desc' => 'Tap the "Download Android APK" button and save the file to your phone.'],
+                            ['title' => 'Allow Unknown Sources',   'desc' => 'Go to Settings → Security → Enable "Install from Unknown Sources" (or "Install Unknown Apps" on Android 8+).'],
+                            ['title' => 'Open the APK File',       'desc' => 'Navigate to your Downloads folder and tap the APK file to begin installation.'],
+                            ['title' => 'Install & Launch',        'desc' => 'Tap "Install" and wait for it to complete. Open the app and register with your mobile number.'],
                         ];
                         @endphp
-                        @foreach($steps as $i => $step)
+                        @foreach($installSteps as $i => $step)
                         <li class="flex gap-4">
-                            <div class="w-7 h-7 bg-blue-700 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
-                                {{ $i + 1 }}
-                            </div>
+                            <div class="w-7 h-7 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5"
+                                 style="background:#1457FB">{{ $i + 1 }}</div>
                             <div>
                                 <p class="font-semibold text-gray-800 text-sm mb-0.5">{{ $step['title'] }}</p>
                                 <p class="text-xs text-gray-500 leading-relaxed">{{ $step['desc'] }}</p>
@@ -294,10 +325,9 @@
                         </li>
                         @endforeach
                     </ol>
-
                     <div class="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-xl">
                         <p class="text-xs text-amber-700 leading-relaxed">
-                            <strong>Note:</strong> This is a direct APK download outside the Play Store. The app is safe and developed by the EasyLoanPoint team. You can re-enable "Unknown Sources" restrictions after installation.
+                            <strong>Note:</strong> This is a direct APK download. The app is safe and developed by the {{ $settings['company_name'] ?? 'EasyLoanPoint' }} team.
                         </p>
                     </div>
                 </div>
@@ -307,28 +337,42 @@
     </div>
 </section>
 
-{{-- ═══════════════════════════════════════════════════════════
-     FOOTER
-════════════════════════════════════════════════════════════ --}}
+{{-- ══════════════════ CONTACT ══════════════════ --}}
+@if(!empty($settings['contact_info']))
+<section class="py-16 bg-white">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-2xl font-extrabold text-gray-900 mb-4">Contact Us</h2>
+        <p class="text-gray-600 leading-relaxed whitespace-pre-line">{{ $settings['contact_info'] }}</p>
+    </div>
+</section>
+@endif
+
+{{-- ══════════════════ FOOTER ══════════════════ --}}
 <footer class="bg-gray-900 text-gray-400 py-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col md:flex-row items-center justify-between gap-6">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-blue-700 rounded-lg flex items-center justify-center">
-                    <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                </div>
-                <span class="text-white font-bold text-lg">EasyLoan<span class="text-blue-400">Point</span></span>
+                @if(!empty($settings['company_logo']))
+                    <img src="{{ asset('public/' . $settings['company_logo']) }}"
+                         alt="{{ $settings['company_name'] ?? 'EasyLoanPoint' }}"
+                         class="h-8 w-8 rounded-lg object-cover">
+                @else
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                         style="background:linear-gradient(135deg,#0D2258,#1457FB)">
+                        <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
+                        </svg>
+                    </div>
+                @endif
+                <span class="text-white font-bold text-lg">{{ $settings['website_name'] ?? 'EasyLoanPoint' }}</span>
             </div>
             <nav class="flex flex-wrap gap-6 text-sm">
-                <a href="#features" class="hover:text-white transition-colors">Features</a>
+                <a href="#features"     class="hover:text-white transition-colors">Features</a>
                 <a href="#how-it-works" class="hover:text-white transition-colors">How it Works</a>
-                <a href="#download" class="hover:text-white transition-colors">Download App</a>
-                <a href="{{ route('login') }}" class="hover:text-white transition-colors">Staff Login</a>
+                <a href="#screenshots"  class="hover:text-white transition-colors">App</a>
+                <a href="#download"     class="hover:text-white transition-colors">Download</a>
             </nav>
-            <p class="text-sm text-center">© {{ date('Y') }} EasyLoanPoint. All rights reserved.</p>
+            <p class="text-sm text-center">© {{ date('Y') }} {{ $settings['company_name'] ?? 'EasyLoanPoint' }}. All rights reserved.</p>
         </div>
     </div>
 </footer>
