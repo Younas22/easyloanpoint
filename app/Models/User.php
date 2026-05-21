@@ -60,9 +60,14 @@ class User extends Authenticatable
 
     // ── Role helpers ─────────────────────────────────────────────────────────
 
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'super_admin';
+    }
+
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return in_array($this->role, ['admin', 'super_admin']);
     }
 
     public function isHR(): bool
@@ -83,10 +88,11 @@ class User extends Authenticatable
     public function getRoleLabelAttribute(): string
     {
         return match($this->role) {
-            'admin'    => 'Administrator',
-            'hr'       => 'HR Manager',
-            'customer' => 'Customer',
-            default    => ucfirst($this->role),
+            'super_admin' => 'Super Admin',
+            'admin'       => 'Administrator',
+            'hr'          => 'HR Manager',
+            'customer'    => 'Customer',
+            default       => ucfirst($this->role),
         };
     }
 }

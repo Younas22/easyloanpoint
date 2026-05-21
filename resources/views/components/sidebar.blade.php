@@ -1,30 +1,38 @@
 @php
-    $user     = auth()->user();
-    $isAdmin  = $user->isAdmin();
-    $current  = request()->route()->getName();
+    $user          = auth()->user();
+    $isSuperAdmin  = $user->isSuperAdmin();
+    $isAdmin       = $user->isAdmin();          // true for both admin + super_admin
+    $isPureAdmin   = $isAdmin && !$isSuperAdmin; // only regular admin
+    $current       = request()->route()->getName();
 
     $adminNav = [
-        ['route' => 'admin.dashboard',        'label' => 'Dashboard',        'icon' => 'grid',       'prefix' => 'admin.dashboard'],
-        ['route' => 'admin.hr.index',         'label' => 'HR Management',    'icon' => 'users',      'prefix' => 'admin.hr'],
-        ['route' => 'admin.customers.index',  'label' => 'Customers',        'icon' => 'user-group', 'prefix' => 'admin.customers'],
-        ['route' => 'admin.loans.index',      'label' => 'Loan Applications','icon' => 'document',   'prefix' => 'admin.loans'],
-        ['route' => 'admin.loan-types.index', 'label' => 'Loan Types',       'icon' => 'tag',        'prefix' => 'admin.loan-types'],
-        ['route' => 'admin.assignments.index', 'label' => 'Assignments',      'icon' => 'link',       'prefix' => 'admin.assignments'],
-        ['route' => 'notifications.index',   'label' => 'Notifications',    'icon' => 'bell',       'prefix' => 'notifications'],
-        ['route' => 'admin.reports.index',    'label' => 'Reports',          'icon' => 'chart',      'prefix' => 'admin.reports'],
-        ['route' => 'admin.settings.index',   'label' => 'Settings',         'icon' => 'cog',        'prefix' => 'admin.settings'],
-        ['route' => 'admin.logs.index',       'label' => 'Activity Logs',    'icon' => 'list',       'prefix' => 'admin.logs'],
+        ['route' => 'admin.dashboard',         'label' => 'Dashboard',         'icon' => 'grid',       'prefix' => 'admin.dashboard',    'perm' => 'admin_dashboard'],
+        ['route' => 'admin.hr.index',          'label' => 'HR Management',     'icon' => 'users',      'prefix' => 'admin.hr',           'perm' => 'admin_hr'],
+        ['route' => 'admin.customers.index',   'label' => 'Customers',         'icon' => 'user-group', 'prefix' => 'admin.customers',    'perm' => 'admin_customers'],
+        ['route' => 'admin.loans.index',       'label' => 'Loan Applications', 'icon' => 'document',   'prefix' => 'admin.loans',        'perm' => 'admin_loans'],
+        ['route' => 'admin.loan-types.index',  'label' => 'Loan Types',        'icon' => 'tag',        'prefix' => 'admin.loan-types',   'perm' => 'admin_loan_types'],
+        ['route' => 'admin.assignments.index', 'label' => 'Assignments',       'icon' => 'link',       'prefix' => 'admin.assignments',  'perm' => 'admin_assignments'],
+        ['route' => 'notifications.index',     'label' => 'Notifications',     'icon' => 'bell',       'prefix' => 'notifications',      'perm' => 'admin_notifications'],
+        ['route' => 'admin.reports.index',     'label' => 'Reports',           'icon' => 'chart',      'prefix' => 'admin.reports',      'perm' => 'admin_reports'],
+        ['route' => 'admin.settings.index',    'label' => 'Settings',          'icon' => 'cog',        'prefix' => 'admin.settings',     'perm' => 'admin_settings'],
+        ['route' => 'admin.logs.index',        'label' => 'Activity Logs',     'icon' => 'list',       'prefix' => 'admin.logs',         'perm' => 'admin_logs'],
     ];
 
     $hrNav = [
-        ['route' => 'hr.dashboard',        'label' => 'Dashboard',        'icon' => 'grid',       'prefix' => 'hr.dashboard'],
-        ['route' => 'hr.customers.index',  'label' => 'My Customers',     'icon' => 'user-group', 'prefix' => 'hr.customers'],
-        ['route' => 'hr.loans.index',      'label' => 'Loan Applications','icon' => 'document',   'prefix' => 'hr.loans'],
-        ['route' => 'notifications.index', 'label' => 'Notifications',    'icon' => 'bell',       'prefix' => 'notifications'],
-        ['route' => 'profile.show',        'label' => 'Profile',          'icon' => 'user',       'prefix' => 'profile'],
+        ['route' => 'hr.dashboard',        'label' => 'Dashboard',         'icon' => 'grid',       'prefix' => 'hr.dashboard',   'perm' => 'hr_dashboard'],
+        ['route' => 'hr.customers.index',  'label' => 'My Customers',      'icon' => 'user-group', 'prefix' => 'hr.customers',   'perm' => 'hr_customers'],
+        ['route' => 'hr.loans.index',      'label' => 'Loan Applications', 'icon' => 'document',   'prefix' => 'hr.loans',       'perm' => 'hr_loans'],
+        ['route' => 'notifications.index', 'label' => 'Notifications',     'icon' => 'bell',       'prefix' => 'notifications',  'perm' => 'hr_notifications'],
+        ['route' => 'profile.show',        'label' => 'Profile',           'icon' => 'user',       'prefix' => 'profile',        'perm' => 'hr_profile'],
     ];
 
     $navItems = $isAdmin ? $adminNav : $hrNav;
+
+    // Filter hidden items for non-super_admin users
+    if (! $isSuperAdmin) {
+        $hiddenPerms = \App\Models\PanelPermission::where('is_hidden', true)->pluck('key')->toArray();
+        $navItems    = array_filter($navItems, fn($item) => ! in_array($item['perm'], $hiddenPerms));
+    }
 @endphp
 
 {{-- Mobile overlay --}}
@@ -124,6 +132,23 @@
             @endforeach
         </ul>
     </nav>
+
+    {{-- Permissions button (super_admin only) --}}
+    @if($isSuperAdmin)
+        <div class="border-t border-slate-700 px-3 py-3">
+            @php $isPermActive = str_starts_with($current ?? '', 'admin.permissions'); @endphp
+            <a href="{{ route('admin.permissions.index') }}"
+               class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors
+                      {{ $isPermActive ? 'bg-yellow-500 text-white' : 'text-yellow-400 hover:bg-slate-800 hover:text-yellow-300' }}">
+                <span class="flex h-5 w-5 flex-shrink-0 items-center justify-center">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    </svg>
+                </span>
+                Permissions
+            </a>
+        </div>
+    @endif
 
     {{-- User profile at bottom --}}
     <div class="border-t border-slate-700 p-4">

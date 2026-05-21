@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\LoanTypeController;
+use App\Http\Controllers\Admin\PermissionsController;
 use Illuminate\Support\Facades\Route;
 
 // ─── Public homepage ──────────────────────────────────────────────────────────
@@ -91,6 +92,10 @@ Route::middleware(['auth', 'admin'])
         Route::post('/settings/{group}', [SettingController::class, 'update'])->name('settings.update');
         Route::get('/logs',      [ActivityLogController::class, 'index'])->name('logs.index');
         Route::get('/logs/ajax', [ActivityLogController::class, 'ajax'])->name('logs.ajax');
+
+        // Permissions (super_admin only — controller enforces it)
+        Route::get('/permissions',                          [PermissionsController::class, 'index'])->name('permissions.index');
+        Route::patch('/permissions/{permission}/toggle',    [PermissionsController::class, 'toggle'])->name('permissions.toggle');
     });
 
 // ─── Profile routes (shared: admin + HR) ─────────────────────────────────────

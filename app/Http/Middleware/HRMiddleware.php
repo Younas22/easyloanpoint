@@ -14,7 +14,7 @@ class HRMiddleware
             return redirect()->route('login')->with('error', 'Please login to continue.');
         }
 
-        if (!in_array(auth()->user()->role, ['admin', 'hr'])) {
+        if (!in_array(auth()->user()->role, ['admin', 'hr', 'super_admin'])) {
             abort(403, 'Access denied.');
         }
 
