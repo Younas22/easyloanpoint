@@ -130,6 +130,10 @@
             background: linear-gradient(90deg, #1457FB 0%, #bfdbfe 100%);
         }
 
+        @media (max-width: 639px) {
+            .step-connector::after { display: none; }
+        }
+
         /* ── Lazy image fade-in ── */
         img[loading="lazy"] { opacity: 0; transition: opacity .4s ease; }
         img[loading="lazy"].loaded { opacity: 1; }
