@@ -180,7 +180,7 @@
         </div>
 
         {{-- Documents --}}
-        <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div class="rounded-xl border border-gray-200 bg-white shadow-sm" style="display: none;">
             <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">
                 <h2 class="text-sm font-semibold text-gray-800">
                     Documents
