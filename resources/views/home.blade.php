@@ -33,8 +33,8 @@
     {{-- Schema Markup --}}
     <script type="application/ld+json">
     {
-        "@context": "https://schema.org",
-        "@type": "FinancialService",
+        "@@context": "https://schema.org",
+        "@@type": "FinancialService",
         "name": "{{ $settings['website_name'] ?? 'EasyLoanPoint' }}",
         "description": "Fast and trusted loan services in India with real-time application tracking.",
         "url": "{{ url('/') }}",
