@@ -132,7 +132,7 @@
                             <div>
                                 <p class="text-xs font-medium text-gray-500">Aadhaar Card</p>
                                 <p class="mt-0.5 font-mono text-sm font-semibold text-gray-800">
-                                    {{ $customer->masked_aadhaar }}
+                                    {{ $customer->aadhaar_number ?? '—' }}
                                 </p>
                             </div>
                         </div>
@@ -188,7 +188,7 @@
                 @endphp
                 @if($hasDocs)
                     <div class="border-t border-gray-100 px-6 py-5">
-                        <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Document Images</p>
+                        <p class="mb-3 text-sm font-semibold text-gray-800">Document Images</p>
                         <div class="grid grid-cols-3 gap-3">
                             @foreach($kycDocs as $doc)
                                 @if(!empty($doc['path']))
@@ -341,7 +341,7 @@
                                 </p>
                                 <div class="space-y-1">
                                     <p class="text-sm font-semibold text-gray-800">{{ $bank->bank_name ?: '—' }}</p>
-                                    <p class="font-mono text-sm text-gray-600">{{ $bank->masked_account }}</p>
+                                    <p class="font-mono text-sm text-gray-600">{{ $bank->account_number }}</p>
                                     @if($bank->ifsc_code)
                                         <p class="font-mono text-xs uppercase text-gray-500">{{ $bank->ifsc_code }}</p>
                                     @endif
