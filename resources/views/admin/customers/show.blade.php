@@ -192,25 +192,25 @@
                         <div class="grid grid-cols-3 gap-3">
                             @foreach($kycDocs as $doc)
                                 @if(!empty($doc['path']))
-                                    <a href="{{ asset('public/' . $doc['path']) }}" target="_blank"
-                                       class="group relative block overflow-hidden rounded-xl border border-gray-200 hover:border-blue-400 transition-colors">
-                                        <img src="{{ asset('public/' . $doc['path']) }}"
-                                             alt="{{ $doc['label'] }}"
-                                             class="h-28 w-full object-cover transition group-hover:opacity-90">
-                                        <div class="absolute bottom-0 left-0 right-0 bg-black/55 py-1.5 text-center text-xs font-semibold text-white">
-                                            {{ $doc['label'] }}
-                                        </div>
-                                        <div class="absolute right-2 top-2 hidden group-hover:block">
-                                            <span class="rounded-full bg-white/80 px-2 py-0.5 text-xs font-medium text-blue-700">View</span>
-                                        </div>
-                                    </a>
+                                    <div>
+                                        <p class="mb-1.5 text-xs font-semibold text-gray-900">{{ $doc['label'] }}</p>
+                                        <a href="{{ asset('public/' . $doc['path']) }}" target="_blank"
+                                           class="group relative block overflow-hidden rounded-xl border border-gray-200 hover:border-blue-400 transition-colors">
+                                            <img src="{{ asset('public/' . $doc['path']) }}"
+                                                 alt="{{ $doc['label'] }}"
+                                                 class="h-28 w-full object-cover transition group-hover:opacity-90">
+                                            <div class="absolute right-2 top-2 hidden group-hover:block">
+                                                <span class="rounded-full bg-white/80 px-2 py-0.5 text-xs font-medium text-blue-700">View</span>
+                                            </div>
+                                        </a>
+                                    </div>
                                 @else
-                                    <div class="flex h-28 items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50 text-center">
-                                        <div>
-                                            <svg class="mx-auto h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                    <div>
+                                        <p class="mb-1.5 text-xs font-semibold text-gray-900">{{ $doc['label'] }}</p>
+                                        <div class="flex h-28 items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50 text-center">
+                                            <svg class="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h4a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
                                             </svg>
-                                            <p class="mt-1 text-xs text-gray-400">{{ $doc['label'] }}</p>
                                         </div>
                                     </div>
                                 @endif
