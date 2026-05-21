@@ -84,6 +84,18 @@
                 <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">
                     <h2 class="text-sm font-semibold text-gray-700">Personal Information</h2>
                 </div>
+                {{-- Profile Photo --}}
+                @if($customer->user?->profile_image)
+                    <div class="flex items-center gap-4 border-b border-gray-100 px-6 py-4">
+                        <img src="{{ asset('public/' . $customer->user->profile_image) }}"
+                             alt="{{ $customer->name }}"
+                             class="h-16 w-16 rounded-full object-cover ring-2 ring-gray-200">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800">{{ $customer->name }}</p>
+                            <p class="text-xs text-gray-400">Profile Photo</p>
+                        </div>
+                    </div>
+                @endif
                 <div class="grid grid-cols-1 gap-x-8 gap-y-4 px-6 py-5 sm:grid-cols-2">
                     @php
                         $fields = [
@@ -164,6 +176,48 @@
                     </div>
 
                 </div>
+
+                {{-- KYC Document Images --}}
+                @php
+                    $kycDocs = [
+                        ['label' => 'Aadhaar Card', 'path' => $customer->aadhaar_document],
+                        ['label' => 'PAN Card',     'path' => $customer->pan_document],
+                        ['label' => 'Selfie',        'path' => $customer->selfie_document],
+                    ];
+                    $hasDocs = collect($kycDocs)->contains(fn($d) => !empty($d['path']));
+                @endphp
+                @if($hasDocs)
+                    <div class="border-t border-gray-100 px-6 py-5">
+                        <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Document Images</p>
+                        <div class="grid grid-cols-3 gap-3">
+                            @foreach($kycDocs as $doc)
+                                @if(!empty($doc['path']))
+                                    <a href="{{ asset('public/' . $doc['path']) }}" target="_blank"
+                                       class="group relative block overflow-hidden rounded-xl border border-gray-200 hover:border-blue-400 transition-colors">
+                                        <img src="{{ asset('public/' . $doc['path']) }}"
+                                             alt="{{ $doc['label'] }}"
+                                             class="h-28 w-full object-cover transition group-hover:opacity-90">
+                                        <div class="absolute bottom-0 left-0 right-0 bg-black/55 py-1.5 text-center text-xs font-semibold text-white">
+                                            {{ $doc['label'] }}
+                                        </div>
+                                        <div class="absolute right-2 top-2 hidden group-hover:block">
+                                            <span class="rounded-full bg-white/80 px-2 py-0.5 text-xs font-medium text-blue-700">View</span>
+                                        </div>
+                                    </a>
+                                @else
+                                    <div class="flex h-28 items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50 text-center">
+                                        <div>
+                                            <svg class="mx-auto h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h4a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                                            </svg>
+                                            <p class="mt-1 text-xs text-gray-400">{{ $doc['label'] }}</p>
+                                        </div>
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </div>
 
             {{-- Loan History --}}
@@ -270,6 +324,36 @@
                     @endif
                 </div>
             </div>
+
+            {{-- Bank Accounts --}}
+            @if($customer->bankAccounts->count())
+                <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+                    <div class="border-b border-gray-100 px-6 py-4">
+                        <h2 class="text-sm font-semibold text-gray-700">Bank Accounts
+                            <span class="ml-1.5 rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{{ $customer->bankAccounts->count() }}</span>
+                        </h2>
+                    </div>
+                    <div class="divide-y divide-gray-100">
+                        @foreach($customer->bankAccounts as $i => $bank)
+                            <div class="px-6 py-4">
+                                <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                                    {{ $i === 0 ? 'Primary Account' : 'Secondary Account' }}
+                                </p>
+                                <div class="space-y-1">
+                                    <p class="text-sm font-semibold text-gray-800">{{ $bank->bank_name ?: '—' }}</p>
+                                    <p class="font-mono text-sm text-gray-600">{{ $bank->masked_account }}</p>
+                                    @if($bank->ifsc_code)
+                                        <p class="font-mono text-xs uppercase text-gray-500">{{ $bank->ifsc_code }}</p>
+                                    @endif
+                                    @if($bank->holder_name)
+                                        <p class="text-xs text-gray-500">{{ $bank->holder_name }}</p>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
 
             {{-- Current HR Assignment --}}
             <div class="rounded-xl border border-gray-200 bg-white shadow-sm">

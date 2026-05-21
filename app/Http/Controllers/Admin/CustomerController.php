@@ -82,6 +82,8 @@ class CustomerController extends Controller
             'loans' => fn ($q) => $q->latest()->with('assignedHR'),
             'assignments' => fn ($q) => $q->latest()->with(['hr', 'assignedBy']),
             'creator',
+            'bankAccounts',
+            'user',
         ]);
 
         $hrs    = User::where('role', 'hr')->where('status', true)->orderBy('name')->get();
