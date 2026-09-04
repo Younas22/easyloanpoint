@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Setting;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -14,8 +15,11 @@ use Throwable;
  *   Header: Authorization: <api key>
  *   Body:   route=q, message=<text>, numbers=<comma separated 10-digit numbers>
  *
- * The API key lives only in Laravel config (config('services.fast2sms.api_key'),
- * sourced from FAST2SMS_API_KEY in .env) and is never returned to callers or logged.
+ * The API key is resolved from, in order: the "API Key" field on the
+ * SMS / OTP tab of Admin → Settings (stored in the settings table as
+ * sms_api_key — editable without server/file access), then the
+ * FAST2SMS_API_KEY .env value as a fallback for first-time setup. It is
+ * never returned to callers or logged either way.
  */
 class Fast2SmsService
 {
@@ -33,10 +37,10 @@ class Fast2SmsService
      */
     public function send(string $phoneNumber, string $message): bool
     {
-        $apiKey = config('services.fast2sms.api_key');
+        $apiKey = Setting::get('sms_api_key') ?: config('services.fast2sms.api_key');
 
         if (blank($apiKey)) {
-            Log::error('Fast2SMS: API key is not configured (FAST2SMS_API_KEY).');
+            Log::error('Fast2SMS: API key is not configured (set it in Admin → Settings → SMS / OTP, or FAST2SMS_API_KEY in .env).');
 
             return false;
         }

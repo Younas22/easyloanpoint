@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\LoanTypeController;
 use App\Http\Controllers\Admin\PermissionsController;
+use App\Http\Controllers\Admin\SystemToolsController;
 use Illuminate\Support\Facades\Route;
 
 // ─── Public homepage ──────────────────────────────────────────────────────────
@@ -90,6 +91,15 @@ Route::middleware(['auth', 'admin'])
         Route::get('/reports/print',  [ReportController::class, 'printReport'])->name('reports.print');
         Route::get('/settings',          [SettingController::class, 'index'])->name('settings.index');
         Route::post('/settings/{group}', [SettingController::class, 'update'])->name('settings.update');
+
+        // System Tools (super_admin only — controller enforces it)
+        Route::prefix('settings/system')->name('settings.system.')->group(function () {
+            Route::get('/migrations/pending', [SystemToolsController::class, 'pendingMigrations'])->name('migrations.pending');
+            Route::post('/migrate',           [SystemToolsController::class, 'migrate'])->name('migrate');
+            Route::post('/migrate-one',       [SystemToolsController::class, 'migrateOne'])->name('migrate-one');
+            Route::post('/composer-install',  [SystemToolsController::class, 'composerInstall'])->name('composer-install');
+            Route::post('/cache-clear',       [SystemToolsController::class, 'cacheClear'])->name('cache-clear');
+        });
         Route::get('/logs',      [ActivityLogController::class, 'index'])->name('logs.index');
         Route::get('/logs/ajax', [ActivityLogController::class, 'ajax'])->name('logs.ajax');
 

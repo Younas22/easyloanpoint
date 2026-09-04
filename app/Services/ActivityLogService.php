@@ -111,4 +111,9 @@ class ActivityLogService
     {
         self::log('hr_created', "HR user \"{$hrName}\" was created.");
     }
+
+    public static function systemToolRun(string $description): void
+    {
+        self::log('system_tool_run', $description);
+    }
 }

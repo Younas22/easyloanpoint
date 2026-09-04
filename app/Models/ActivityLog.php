@@ -38,6 +38,7 @@ class ActivityLog extends Model
             'apk_updated'         => 'violet',
             'profile_updated'     => 'yellow',
             'hr_created'          => 'teal',
+            'system_tool_run'     => 'red',
             default               => 'slate',
         };
     }
@@ -60,6 +61,7 @@ class ActivityLog extends Model
             'apk_updated'         => 'APK Updated',
             'profile_updated'     => 'Profile Updated',
             'hr_created'          => 'HR Created',
+            'system_tool_run'     => 'System Tool Run',
             default               => ucwords(str_replace('_', ' ', $this->action)),
         };
     }
@@ -112,6 +114,7 @@ class ActivityLog extends Model
             'customer_assigned', 'loan_applied', 'loan_approved', 'loan_rejected',
             'loan_status_updated', 'document_uploaded', 'document_verified',
             'settings_changed', 'apk_updated', 'profile_updated', 'hr_created',
+            'system_tool_run',
         ];
     }
 }

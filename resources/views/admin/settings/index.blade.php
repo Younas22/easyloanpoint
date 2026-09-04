@@ -42,6 +42,7 @@
                     ['id' => 'notifications', 'label' => 'Notifications',  'icon' => 'bell',      'show' => false],
                     ['id' => 'homepage',      'label' => 'Homepage',       'icon' => 'home',      'show' => true],
                     ['id' => 'security',      'label' => 'Security',       'icon' => 'shield',    'show' => false],
+                    ['id' => 'system',        'label' => 'System Tools',   'icon' => 'terminal',  'show' => auth()->user()->isSuperAdmin()],
                 ];
             @endphp
             <ul class="pb-3">
@@ -73,6 +74,8 @@
                                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                                 @elseif($tab['icon'] === 'shield')
                                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                                @elseif($tab['icon'] === 'terminal')
+                                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                 @endif
                             </span>
                             {{ $tab['label'] }}
@@ -706,6 +709,93 @@
             </form>
         </div>
 
+        {{-- ════ TAB 9 — System Tools (super_admin only) ════ --}}
+        @if(auth()->user()->isSuperAdmin())
+        <div id="panel-system" class="tab-panel hidden">
+            <div class="space-y-6">
+
+                <div class="rounded-lg border border-yellow-100 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
+                    <strong>Caution:</strong> These run real commands on the server (database migrations, composer, cache).
+                    Use on a live site only when you know what a command does. Composer install can take a while and may
+                    time out on some hosts — if it fails, run it via SSH/terminal instead.
+                </div>
+
+                {{-- Migrations --}}
+                <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+                    <div class="border-b border-gray-100 px-6 py-4">
+                        <h2 class="text-base font-semibold text-gray-900">Database Migrations</h2>
+                        <p class="text-sm text-gray-500">Apply new database changes after uploading updated code.</p>
+                    </div>
+                    <div class="px-6 py-6 space-y-5">
+                        <div class="flex items-center justify-between rounded-lg border border-gray-200 px-5 py-4">
+                            <div>
+                                <p class="text-sm font-semibold text-gray-800">Run All Pending Migrations</p>
+                                <p id="pending-count" class="text-xs text-gray-400 mt-0.5">Checking…</p>
+                            </div>
+                            <button type="button" id="btn-migrate-all" class="s-btn-tool">Run Migrations</button>
+                        </div>
+
+                        <div class="rounded-lg border border-gray-100 bg-gray-50 px-5 py-4 space-y-3">
+                            <p class="text-xs font-semibold uppercase tracking-widest text-gray-400">Run One Specific Migration</p>
+                            <div class="flex flex-col gap-3 sm:flex-row">
+                                <input list="pending-migrations-list" id="migration-name" class="s-input flex-1"
+                                       placeholder="e.g. 2026_09_04_000001_create_otp_verifications_table">
+                                <datalist id="pending-migrations-list"></datalist>
+                                <button type="button" id="btn-migrate-one" class="s-btn-tool whitespace-nowrap">Run This Migration</button>
+                            </div>
+                            <p class="text-xs text-gray-400">Type the exact migration filename (without .php) — pick one from the suggestions.</p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Composer --}}
+                <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+                    <div class="border-b border-gray-100 px-6 py-4">
+                        <h2 class="text-base font-semibold text-gray-900">Composer</h2>
+                        <p class="text-sm text-gray-500">Install PHP dependencies listed in composer.json.</p>
+                    </div>
+                    <div class="px-6 py-6">
+                        <div class="flex items-center justify-between rounded-lg border border-gray-200 px-5 py-4">
+                            <div>
+                                <p class="text-sm font-semibold text-gray-800">composer install</p>
+                                <p class="text-xs text-gray-400 mt-0.5">Requires composer to be available on this server.</p>
+                            </div>
+                            <button type="button" id="btn-composer" class="s-btn-tool">Run Composer Install</button>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Cache --}}
+                <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+                    <div class="border-b border-gray-100 px-6 py-4">
+                        <h2 class="text-base font-semibold text-gray-900">Clear Cache</h2>
+                        <p class="text-sm text-gray-500">Clear cached config, routes, views, or application cache after changes.</p>
+                    </div>
+                    <div class="px-6 py-6">
+                        <div class="flex flex-wrap gap-3">
+                            <button type="button" class="s-btn-tool-outline" data-cache-type="config">Config Cache</button>
+                            <button type="button" class="s-btn-tool-outline" data-cache-type="route">Route Cache</button>
+                            <button type="button" class="s-btn-tool-outline" data-cache-type="view">View Cache</button>
+                            <button type="button" class="s-btn-tool-outline" data-cache-type="cache">App Cache</button>
+                            <button type="button" class="s-btn-tool" data-cache-type="all">Clear All Caches</button>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Output --}}
+                <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+                    <div class="border-b border-gray-100 px-6 py-4">
+                        <h2 class="text-base font-semibold text-gray-900">Output</h2>
+                    </div>
+                    <div class="px-6 py-6">
+                        <pre id="tool-output" class="max-h-96 overflow-auto rounded-lg bg-gray-900 px-4 py-3 text-xs leading-relaxed text-gray-100 whitespace-pre-wrap">Command output will appear here…</pre>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        @endif
+
     </div>{{-- /right --}}
 </div>
 
@@ -722,6 +812,13 @@
     .s-btn-save { display:inline-flex; align-items:center; gap:.5rem; border-radius:.5rem; background:#1D4ED8; padding:.5625rem 1.25rem; font-size:.875rem; font-weight:600; color:#fff; border:none; cursor:pointer; transition:background .15s; }
     .s-btn-save:hover { background:#1E40AF; }
     .s-btn-save:disabled { opacity:.6; cursor:not-allowed; }
+
+    .s-btn-tool { display:inline-flex; align-items:center; gap:.5rem; border-radius:.5rem; background:#111827; padding:.5rem 1rem; font-size:.8125rem; font-weight:600; color:#fff; border:none; cursor:pointer; transition:background .15s; }
+    .s-btn-tool:hover { background:#000; }
+    .s-btn-tool:disabled { opacity:.6; cursor:not-allowed; }
+    .s-btn-tool-outline { display:inline-flex; align-items:center; gap:.5rem; border-radius:.5rem; background:#fff; padding:.5rem 1rem; font-size:.8125rem; font-weight:600; color:#111827; border:1px solid #D1D5DB; cursor:pointer; transition:background .15s; }
+    .s-btn-tool-outline:hover { background:#F9FAFB; }
+    .s-btn-tool-outline:disabled { opacity:.6; cursor:not-allowed; }
 
     /* Toggle */
     .s-toggle { position:relative; display:inline-block; flex-shrink:0; cursor:pointer; }
@@ -847,5 +944,99 @@ function togglePwd(id) {
     const el = document.getElementById(id);
     el.type  = el.type === 'password' ? 'text' : 'password';
 }
+
+// ── System Tools ─────────────────────────────────────────────────────────────
+(function () {
+    const systemPanel = document.getElementById('panel-system');
+    if (!systemPanel) return; // super_admin only
+
+    const outputEl = document.getElementById('tool-output');
+
+    function showOutput(text, ok) {
+        outputEl.textContent = text && text.trim() ? text : (ok ? '(no output)' : 'Failed — no details returned.');
+        outputEl.classList.toggle('text-red-300', !ok);
+        outputEl.classList.toggle('text-gray-100', ok);
+    }
+
+    async function runTool(url, body, btn) {
+        const orig = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = 'Running…';
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': CSRF_TOKEN,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify(body || {}),
+            });
+            const data = await res.json();
+            showOutput((data.data && data.data.output) || data.message, !!data.status);
+            showToast(data.message, data.status ? 'success' : 'error');
+            if (data.status) refreshPendingMigrations();
+        } catch {
+            showOutput('Network error while running this command.', false);
+            showToast('Network error. Please check your connection.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = orig;
+        }
+    }
+
+    async function refreshPendingMigrations() {
+        const countEl = document.getElementById('pending-count');
+        const listEl  = document.getElementById('pending-migrations-list');
+        try {
+            const res  = await fetch("{{ route('admin.settings.system.migrations.pending') }}", {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            });
+            const data = await res.json();
+            const pending = (data.data && data.data.pending) || [];
+            countEl.textContent = pending.length === 0
+                ? 'Everything is up to date — no pending migrations.'
+                : pending.length + ' pending migration' + (pending.length === 1 ? '' : 's') + '.';
+            listEl.innerHTML = pending.map(name => `<option value="${name}">`).join('');
+        } catch {
+            countEl.textContent = 'Could not check migration status.';
+        }
+    }
+
+    document.getElementById('btn-migrate-all').addEventListener('click', function () {
+        if (!confirm('Run all pending database migrations now?')) return;
+        runTool("{{ route('admin.settings.system.migrate') }}", {}, this);
+    });
+
+    document.getElementById('btn-migrate-one').addEventListener('click', function () {
+        const name = document.getElementById('migration-name').value.trim();
+        if (!name) { showToast('Enter a migration name first.', 'error'); return; }
+        if (!confirm('Run migration "' + name + '"?')) return;
+        runTool("{{ route('admin.settings.system.migrate-one') }}", { migration: name }, this);
+    });
+
+    document.getElementById('btn-composer').addEventListener('click', function () {
+        if (!confirm('Run "composer install" now? This can take a while.')) return;
+        runTool("{{ route('admin.settings.system.composer-install') }}", {}, this);
+    });
+
+    document.querySelectorAll('[data-cache-type]').forEach(btn => {
+        btn.addEventListener('click', function () {
+            runTool("{{ route('admin.settings.system.cache-clear') }}", { type: this.dataset.cacheType }, this);
+        });
+    });
+
+    // Load pending-migration status once the System Tools tab is first shown.
+    const origSwitchTab = switchTab;
+    let systemLoaded = false;
+    switchTab = function (id) {
+        origSwitchTab(id);
+        if (id === 'system' && !systemLoaded) {
+            systemLoaded = true;
+            refreshPendingMigrations();
+        }
+    };
+})();
 </script>
 @endpush
