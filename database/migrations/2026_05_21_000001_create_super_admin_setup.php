@@ -10,7 +10,12 @@ return new class extends Migration
     public function up(): void
     {
         // ── 1. Add super_admin to users.role enum ─────────────────────────────
-        DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('admin','hr','customer','super_admin') NOT NULL DEFAULT 'hr'");
+        // MySQL-specific enum widening. SQLite (used by the test suite) has no
+        // native ENUM type — the column already accepts any string, so there is
+        // nothing to alter there.
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('admin','hr','customer','super_admin') NOT NULL DEFAULT 'hr'");
+        }
 
         // ── 2. Create panel_permissions table ─────────────────────────────────
         Schema::create('panel_permissions', function (Blueprint $table) {
@@ -62,6 +67,9 @@ return new class extends Migration
     {
         DB::table('users')->where('email', 'superadmin@easyloanpoint.com')->delete();
         Schema::dropIfExists('panel_permissions');
-        DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('admin','hr','customer') NOT NULL DEFAULT 'hr'");
+
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('admin','hr','customer') NOT NULL DEFAULT 'hr'");
+        }
     }
 };

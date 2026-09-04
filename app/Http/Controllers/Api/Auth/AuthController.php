@@ -2,18 +2,22 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
+use App\Exceptions\OtpVerificationException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\ForgotPasswordRequest;
 use App\Http\Requests\Api\LoginRequest;
 use App\Http\Requests\Api\RegisterRequest;
 use App\Http\Requests\Api\ResetPasswordRequest;
+use App\Http\Requests\Api\SendOtpRequest;
 use App\Http\Requests\Api\VerifyOtpRequest;
 use App\Models\User;
 use App\Services\OtpService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -21,58 +25,107 @@ class AuthController extends Controller
 
     public function __construct(private readonly OtpService $otpService) {}
 
-    // ── 1. Register ───────────────────────────────────────────────────────────
+    // ── 1. Send OTP (pre-registration) ───────────────────────────────────────
+    //
+    // Generates and sends an OTP for the given mobile number. No account is
+    // created here — this only proves, in step 2, that the requester owns
+    // the phone number they are about to register with.
 
-    public function register(RegisterRequest $request): JsonResponse
+    public function sendOtp(SendOtpRequest $request): JsonResponse
     {
-        $user = User::create([
-            'name'     => $request->name,
-            'phone'    => $request->mobile,
-            'email'    => $request->email,
-            'password' => $request->password,
-            'role'     => 'customer',
-            'status'   => true,
-        ]);
+        $mobile = $request->mobile;
 
-        $this->otpService->generate($user->phone, 'register');
+        if (User::where('phone', $mobile)->whereNotNull('phone_verified_at')->exists()) {
+            return $this->error('This mobile number is already registered. Please login instead.', 409);
+        }
 
-        return $this->success(
-            'Registration successful. OTP sent to your mobile number.',
-            ['mobile' => $user->phone],
-            201
-        );
+        try {
+            $this->otpService->sendOtp($mobile, 'register', $request->ip());
+        } catch (OtpVerificationException $e) {
+            return $this->error($e->getMessage(), $e->statusCode, $e->meta ?: null);
+        }
+
+        return $this->success('OTP sent successfully.', ['mobile' => $mobile]);
     }
 
-    // ── 2. Verify OTP (post-registration) ─────────────────────────────────────
+    // ── 2. Verify OTP → issue a temporary verification token ─────────────────
+    //
+    // Does NOT create or authenticate any account. On success it returns a
+    // short-lived, single-use verification_token proving this exact mobile
+    // number completed OTP verification for registration.
 
     public function verifyOtp(VerifyOtpRequest $request): JsonResponse
     {
-        $user = User::where('phone', $request->mobile)->where('role', 'customer')->first();
-
-        if (! $user) {
-            return $this->notFound('Mobile number not registered.');
+        try {
+            $token = $this->otpService->verifyOtp($request->mobile, $request->otp, 'register');
+        } catch (OtpVerificationException $e) {
+            return $this->error($e->getMessage(), $e->statusCode, $e->meta ?: null);
         }
 
-        if ($user->phone_verified_at) {
-            return $this->error('Mobile number is already verified. Please login.', 409);
-        }
-
-        if (! $this->otpService->verify($request->mobile, $request->otp, 'register')) {
-            return $this->error('Invalid or expired OTP. Please request a new one.', 422);
-        }
-
-        $user->update(['phone_verified_at' => now()]);
-
-        $token = $user->createToken('flutter-app', ['role:customer'])->plainTextToken;
-
-        return $this->success('Mobile verified successfully.', [
-            'token'      => $token,
-            'token_type' => 'Bearer',
-            'user'       => $this->userPayload($user),
+        return $this->success('Mobile number verified successfully.', [
+            'verification_token' => $token,
         ]);
     }
 
-    // ── 3. Login ──────────────────────────────────────────────────────────────
+    // ── 3. Register (requires a valid verification_token) ────────────────────
+    //
+    // The account is created ONLY after the verification token — proof of
+    // server-side OTP verification for this exact phone number — is
+    // validated. A client-supplied "phone_verified" style flag is never
+    // trusted; verification state lives solely in otp_verifications.
+
+    public function register(RegisterRequest $request): JsonResponse
+    {
+        try {
+            [$user, $token] = DB::transaction(function () use ($request) {
+                $otpRecord = $this->otpService->lockValidToken(
+                    $request->mobile,
+                    $request->verification_token,
+                    'register'
+                );
+
+                // Self-heal: a previous registration attempt for this exact
+                // number that never completed OTP verification does not
+                // block a fresh, now OTP-verified attempt. Only a completed
+                // (phone-verified) account can already own this number —
+                // RegisterRequest already rejects that case before we get here.
+                User::where('phone', $request->mobile)
+                    ->where('role', 'customer')
+                    ->whereNull('phone_verified_at')
+                    ->delete();
+
+                $user = User::create([
+                    'name'              => $request->name,
+                    'phone'             => $request->mobile,
+                    'email'             => $request->email,
+                    'password'          => $request->password,
+                    'role'              => 'customer',
+                    'status'            => true,
+                    'phone_verified_at' => now(),
+                ]);
+
+                $this->otpService->consumeToken($otpRecord);
+
+                $accessToken = $user->createToken('flutter-app', ['role:customer'])->plainTextToken;
+
+                return [$user, $accessToken];
+            });
+        } catch (OtpVerificationException $e) {
+            return $this->error($e->getMessage(), $e->statusCode, $e->meta ?: null);
+        } catch (\Throwable $e) {
+            Log::error('Registration failed.', ['error' => $e->getMessage()]);
+
+            return $this->error('Unable to complete registration. Please try again.', 500);
+        }
+
+        return $this->success('Registration successful.', [
+            'token'      => $token,
+            'token_type' => 'Bearer',
+            'user'       => $this->userPayload($user),
+        ], 201);
+    }
+
+    // ── 4. Login ──────────────────────────────────────────────────────────────
 
     public function login(LoginRequest $request): JsonResponse
     {
@@ -83,10 +136,11 @@ class AuthController extends Controller
         }
 
         if (! $user->phone_verified_at) {
-            $this->otpService->generate($user->phone, 'register');
-
+            // Legacy/incomplete account from before mobile verification was
+            // required at registration. Ask the user to verify and complete
+            // registration again through the normal send-otp/verify-otp flow.
             return $this->error(
-                'Account not verified. A new OTP has been sent to your mobile number.',
+                'This account never completed mobile verification. Please register again.',
                 403,
                 ['needs_verification' => true, 'mobile' => $user->phone]
             );
@@ -108,7 +162,7 @@ class AuthController extends Controller
         ]);
     }
 
-    // ── 4. Logout ─────────────────────────────────────────────────────────────
+    // ── 5. Logout ─────────────────────────────────────────────────────────────
 
     public function logout(Request $request): JsonResponse
     {
@@ -117,15 +171,20 @@ class AuthController extends Controller
         return $this->success('Logged out successfully.');
     }
 
-    // ── 5. Forgot Password (send OTP) ────────────────────────────────────────
+    // ── 6. Forgot Password (send OTP) ────────────────────────────────────────
 
     public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
     {
         $user = User::where('phone', $request->mobile)->where('role', 'customer')->first();
 
-        // Always return success to avoid phone enumeration attacks
+        // Always return success to avoid phone enumeration attacks — including
+        // when the underlying send hits a cooldown or delivery failure.
         if ($user && $user->status) {
-            $this->otpService->generate($user->phone, 'forgot_password');
+            try {
+                $this->otpService->sendOtp($user->phone, 'forgot_password', $request->ip());
+            } catch (OtpVerificationException $e) {
+                Log::info('Forgot-password OTP not sent.', ['reason' => $e->getMessage()]);
+            }
         }
 
         return $this->success(
@@ -134,7 +193,7 @@ class AuthController extends Controller
         );
     }
 
-    // ── 6. Reset Password (verify OTP + set new password) ────────────────────
+    // ── 7. Reset Password (verify OTP + set new password) ────────────────────
 
     public function resetPassword(ResetPasswordRequest $request): JsonResponse
     {
@@ -144,8 +203,10 @@ class AuthController extends Controller
             return $this->notFound('Mobile number not registered.');
         }
 
-        if (! $this->otpService->verify($request->mobile, $request->otp, 'forgot_password')) {
-            return $this->error('Invalid or expired OTP.', 422);
+        try {
+            $this->otpService->verifyAndConsume($request->mobile, $request->otp, 'forgot_password');
+        } catch (OtpVerificationException $e) {
+            return $this->error($e->getMessage(), $e->statusCode, $e->meta ?: null);
         }
 
         $user->update(['password' => $request->password]);
@@ -156,7 +217,7 @@ class AuthController extends Controller
         return $this->success('Password reset successfully. Please login with your new password.');
     }
 
-    // ── 7. Resend OTP ────────────────────────────────────────────────────────
+    // ── 8. Resend OTP ────────────────────────────────────────────────────────
 
     public function resendOtp(Request $request): JsonResponse
     {
@@ -165,17 +226,23 @@ class AuthController extends Controller
             'purpose' => ['required', 'in:register,forgot_password'],
         ]);
 
-        $user = User::where('phone', $request->mobile)->where('role', 'customer')->first();
+        if ($request->purpose === 'register') {
+            if (User::where('phone', $request->mobile)->whereNotNull('phone_verified_at')->exists()) {
+                return $this->error('This mobile number is already registered. Please login instead.', 409);
+            }
+        } else {
+            $user = User::where('phone', $request->mobile)->where('role', 'customer')->first();
 
-        if (! $user) {
-            return $this->notFound('Mobile number not registered.');
+            if (! $user) {
+                return $this->notFound('Mobile number not registered.');
+            }
         }
 
-        if ($request->purpose === 'register' && $user->phone_verified_at) {
-            return $this->error('Mobile number is already verified.', 409);
+        try {
+            $this->otpService->sendOtp($request->mobile, $request->purpose, $request->ip());
+        } catch (OtpVerificationException $e) {
+            return $this->error($e->getMessage(), $e->statusCode, $e->meta ?: null);
         }
-
-        $this->otpService->generate($user->phone, $request->purpose);
 
         return $this->success('OTP resent to your mobile number.');
     }

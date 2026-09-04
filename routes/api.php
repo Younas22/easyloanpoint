@@ -17,12 +17,13 @@ Route::get('/ping', fn () => response()->json([
 
 // ── Public Auth routes ────────────────────────────────────────────────────────
 Route::prefix('auth')->name('api.auth.')->group(function () {
-    Route::post('/register',        [AuthController::class, 'register'])->name('register');
-    Route::post('/verify-otp',      [AuthController::class, 'verifyOtp'])->name('verify-otp');
-    Route::post('/login',           [AuthController::class, 'login'])->name('login');
-    Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->name('forgot-password');
-    Route::post('/reset-password',  [AuthController::class, 'resetPassword'])->name('reset-password');
-    Route::post('/resend-otp',      [AuthController::class, 'resendOtp'])->name('resend-otp');
+    Route::post('/send-otp',        [AuthController::class, 'sendOtp'])->name('send-otp')->middleware('throttle:6,1');
+    Route::post('/verify-otp',      [AuthController::class, 'verifyOtp'])->name('verify-otp')->middleware('throttle:10,1');
+    Route::post('/register',        [AuthController::class, 'register'])->name('register')->middleware('throttle:10,1');
+    Route::post('/login',           [AuthController::class, 'login'])->name('login')->middleware('throttle:10,1');
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->name('forgot-password')->middleware('throttle:6,1');
+    Route::post('/reset-password',  [AuthController::class, 'resetPassword'])->name('reset-password')->middleware('throttle:10,1');
+    Route::post('/resend-otp',      [AuthController::class, 'resendOtp'])->name('resend-otp')->middleware('throttle:6,1');
 });
 
 // ── Public: Loan types (active, visible to app) ───────────────────────────────

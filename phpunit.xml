@@ -19,12 +19,24 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <!-- The dev site is served from a /easyloanpoint subdirectory (APP_URL in .env);
+             tests must hit routes at the app root or every request 404s. -->
+        <env name="APP_URL" value="http://localhost"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
-        <env name="DB_CONNECTION" value="sqlite"/>
-        <env name="DB_DATABASE" value=":memory:"/>
+        <!--
+            The app's migrations use MySQL-only raw SQL (ENUM ALTER … MODIFY COLUMN),
+            so the test suite runs against a dedicated local MySQL database rather
+            than SQLite. Created via: CREATE DATABASE easyloanpoint_test;
+        -->
+        <env name="DB_CONNECTION" value="mysql"/>
+        <env name="DB_HOST" value="127.0.0.1"/>
+        <env name="DB_PORT" value="3306"/>
+        <env name="DB_DATABASE" value="easyloanpoint_test"/>
+        <env name="DB_USERNAME" value="root"/>
+        <env name="DB_PASSWORD" value=""/>
         <env name="DB_URL" value=""/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
