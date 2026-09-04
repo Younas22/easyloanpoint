@@ -64,6 +64,16 @@ class SystemToolsController extends Controller
         return $this->toolResponse($result, 'Composer install completed.', 'Composer install failed.');
     }
 
+    public function recentLogs(Request $request): JsonResponse
+    {
+        $this->authorizeSuperAdmin($request);
+
+        $filter = (string) $request->query('filter', '');
+        $result = $this->tools->recentLogLines($filter);
+
+        return $this->toolResponse($result, 'Loaded recent log entries.', 'Could not read the log file.');
+    }
+
     public function cacheClear(Request $request): JsonResponse
     {
         $this->authorizeSuperAdmin($request);

@@ -98,6 +98,7 @@ Route::middleware(['auth', 'admin'])
             Route::post('/migrate',           [SystemToolsController::class, 'migrate'])->name('migrate');
             Route::post('/migrate-one',       [SystemToolsController::class, 'migrateOne'])->name('migrate-one');
             Route::post('/composer-install',  [SystemToolsController::class, 'composerInstall'])->name('composer-install');
+            Route::get('/logs/recent',        [SystemToolsController::class, 'recentLogs'])->name('logs.recent');
             Route::post('/cache-clear',       [SystemToolsController::class, 'cacheClear'])->name('cache-clear');
         });
         Route::get('/logs',      [ActivityLogController::class, 'index'])->name('logs.index');

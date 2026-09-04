@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Str;
 use Throwable;
 
 /**
@@ -118,6 +119,61 @@ class SystemToolsService
                 'output'  => 'Could not run composer: ' . $e->getMessage()
                            . ' — it may not be installed or reachable on this server\'s PATH. Use SSH/terminal instead.',
             ];
+        }
+    }
+
+    // ── Logs ──────────────────────────────────────────────────────────────────
+
+    /**
+     * The most recent lines from storage/logs/laravel.log whose message
+     * contains $filter (case-insensitive), most recent first. Reads only the
+     * tail of the file so this stays cheap even on a large log.
+     *
+     * @return array{success: bool, output: string}
+     */
+    public function recentLogLines(string $filter = '', int $maxLines = 30): array
+    {
+        $path = storage_path('logs/laravel.log');
+
+        if (! File::exists($path)) {
+            return ['success' => true, 'output' => 'No log file yet.'];
+        }
+
+        try {
+            $handle = fopen($path, 'r');
+            if ($handle === false) {
+                return ['success' => false, 'output' => 'Could not open the log file.'];
+            }
+
+            // Read only the last ~512 KB — enough for recent activity without
+            // loading a multi-MB log fully into memory.
+            $size      = filesize($path) ?: 0;
+            $chunkSize = 512 * 1024;
+            fseek($handle, (int) max(0, $size - $chunkSize));
+            $tail = stream_get_contents($handle);
+            fclose($handle);
+
+            // Laravel log entries start with "[YYYY-MM-DD ...]" — split on
+            // that so a multi-line stack trace stays attached to its entry.
+            $entries = preg_split('/(?=^\[\d{4}-\d{2}-\d{2})/m', (string) $tail) ?: [];
+
+            $matches = collect($entries)
+                ->map(fn ($e) => trim($e))
+                ->filter(fn ($e) => $e !== '')
+                ->filter(fn ($e) => $filter === '' || str_contains(strtolower($e), strtolower($filter)))
+                ->reverse()
+                ->take($maxLines)
+                ->map(fn ($e) => Str::limit($e, 800));
+
+            if ($matches->isEmpty()) {
+                return ['success' => true, 'output' => $filter === ''
+                    ? 'No recent log entries.'
+                    : "No recent log entries matching \"{$filter}\"."];
+            }
+
+            return ['success' => true, 'output' => $matches->implode(str_repeat('-', 60) . "\n")];
+        } catch (Throwable $e) {
+            return ['success' => false, 'output' => 'Could not read the log file: ' . $e->getMessage()];
         }
     }
 

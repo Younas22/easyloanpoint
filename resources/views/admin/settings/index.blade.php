@@ -765,6 +765,20 @@
                     </div>
                 </div>
 
+                {{-- Logs --}}
+                <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+                    <div class="border-b border-gray-100 px-6 py-4">
+                        <h2 class="text-base font-semibold text-gray-900">Recent Logs</h2>
+                        <p class="text-sm text-gray-500">Read storage/logs/laravel.log without needing file/SSH access — useful for seeing exactly why an OTP SMS or other action failed.</p>
+                    </div>
+                    <div class="px-6 py-6">
+                        <div class="flex flex-col gap-3 sm:flex-row">
+                            <button type="button" id="btn-log-fast2sms" class="s-btn-tool whitespace-nowrap">View Fast2SMS Errors</button>
+                            <button type="button" id="btn-log-recent" class="s-btn-tool-outline whitespace-nowrap">View All Recent Errors</button>
+                        </div>
+                    </div>
+                </div>
+
                 {{-- Cache --}}
                 <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
                     <div class="border-b border-gray-100 px-6 py-4">
@@ -1019,6 +1033,30 @@ function togglePwd(id) {
     document.getElementById('btn-composer').addEventListener('click', function () {
         if (!confirm('Run "composer install" now? This can take a while.')) return;
         runTool("{{ route('admin.settings.system.composer-install') }}", {}, this);
+    });
+
+    async function viewLogs(filter, btn) {
+        const orig = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = 'Loading…';
+        try {
+            const url = "{{ route('admin.settings.system.logs.recent') }}" + (filter ? ('?filter=' + encodeURIComponent(filter)) : '');
+            const res  = await fetch(url, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+            const data = await res.json();
+            showOutput((data.data && data.data.output) || data.message, !!data.status);
+        } catch {
+            showOutput('Network error while loading logs.', false);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = orig;
+        }
+    }
+
+    document.getElementById('btn-log-fast2sms').addEventListener('click', function () {
+        viewLogs('Fast2SMS', this);
+    });
+    document.getElementById('btn-log-recent').addEventListener('click', function () {
+        viewLogs('', this);
     });
 
     document.querySelectorAll('[data-cache-type]').forEach(btn => {

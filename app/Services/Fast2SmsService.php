@@ -79,11 +79,17 @@ class Fast2SmsService
         $payload = $response->json();
 
         if (! is_array($payload) || ($payload['return'] ?? false) !== true) {
+            // On failure Fast2SMS returns a "message"/"status_code" describing
+            // *why* (e.g. invalid key, low wallet balance, DND number) — safe
+            // to log, it is never the OTP or the API key.
             Log::error('Fast2SMS: API reported failure.', [
-                'phone'      => $this->maskPhone($phoneNumber),
-                'status'     => $response->status(),
-                'return'     => $payload['return'] ?? null,
-                'request_id' => $payload['request_id'] ?? null,
+                'phone'        => $this->maskPhone($phoneNumber),
+                'http_status'  => $response->status(),
+                'return'       => $payload['return'] ?? null,
+                'status_code'  => $payload['status_code'] ?? null,
+                'reason'       => $payload['message'] ?? null,
+                'request_id'   => $payload['request_id'] ?? null,
+                'raw_response' => is_array($payload) ? null : $response->body(),
             ]);
 
             return false;
