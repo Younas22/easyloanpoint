@@ -272,11 +272,15 @@ class OtpService
 
     private function messageFor(string $purpose, string $code): string
     {
-        $minutes = (int) config('otp.expiry_minutes');
-
+        // Kept deliberately short and plain — Fast2SMS's Quick ("q") route
+        // runs an automated spam filter, and longer promotional-sounding
+        // wording (e.g. "verification code", "expires in...", "do not
+        // share...") was getting flagged as spam_sms and silently rejected
+        // in production, even though the same route accepts short OTP-style
+        // text like "otp is: 123456" without issue.
         return match ($purpose) {
-            'forgot_password' => "Your EasyLoanPoint password reset code is {$code}. It expires in {$minutes} minutes. Do not share this code with anyone.",
-            default            => "Your EasyLoanPoint verification code is {$code}. It expires in {$minutes} minutes. Do not share this code with anyone.",
+            'forgot_password' => "EasyLoanPoint reset OTP is: {$code}",
+            default            => "EasyLoanPoint OTP is: {$code}",
         };
     }
 }
