@@ -79,7 +79,7 @@ class SystemToolsController extends Controller
         $this->authorizeSuperAdmin($request);
 
         $validated = $request->validate([
-            'type' => ['required', 'in:config,route,view,cache,all'],
+            'type' => ['required', 'in:config,route,view,cache,opcache,all'],
         ]);
 
         $result = $this->tools->clearCache($validated['type']);

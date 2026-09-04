@@ -791,8 +791,10 @@
                             <button type="button" class="s-btn-tool-outline" data-cache-type="route">Route Cache</button>
                             <button type="button" class="s-btn-tool-outline" data-cache-type="view">View Cache</button>
                             <button type="button" class="s-btn-tool-outline" data-cache-type="cache">App Cache</button>
+                            <button type="button" class="s-btn-tool-outline" data-cache-type="opcache">Reset PHP OPcache</button>
                             <button type="button" class="s-btn-tool" data-cache-type="all">Clear All Caches</button>
                         </div>
+                        <p class="mt-3 text-xs text-gray-400">If you just uploaded new files via FTP/File Manager and changes aren't showing up, click <strong>Reset PHP OPcache</strong> — some hosts keep serving the old compiled code from memory until this runs.</p>
                     </div>
                 </div>
 

@@ -184,6 +184,10 @@ class SystemToolsService
      */
     public function clearCache(string $type): array
     {
+        if ($type === 'opcache') {
+            return $this->resetOpcache();
+        }
+
         $commands = match ($type) {
             'config' => ['config:clear'],
             'route'  => ['route:clear'],
@@ -204,9 +208,40 @@ class SystemToolsService
                 $output .= Artisan::output();
             }
 
+            // "Clear All" also resets OPcache — after an FTP/file-manager
+            // upload, some hosts keep serving the old compiled PHP from
+            // memory until this runs, even though Laravel's own caches
+            // (config/route/view) have nothing to do with that.
+            if ($type === 'all') {
+                $opcache = $this->resetOpcache();
+                $output .= PHP_EOL . $opcache['output'];
+            }
+
             return ['success' => true, 'output' => trim($output)];
         } catch (Throwable $e) {
             return ['success' => false, 'output' => $e->getMessage()];
         }
+    }
+
+    /**
+     * @return array{success: bool, output: string}
+     */
+    private function resetOpcache(): array
+    {
+        if (! function_exists('opcache_reset')) {
+            return [
+                'success' => false,
+                'output'  => 'OPcache is not enabled on this server (opcache_reset() is unavailable) — nothing to reset.',
+            ];
+        }
+
+        $ok = @opcache_reset();
+
+        return [
+            'success' => $ok,
+            'output'  => $ok
+                ? 'PHP OPcache reset — the server will recompile PHP files from disk on the next request.'
+                : 'opcache_reset() returned false. OPcache may be restricted from web requests on this host (opcache.restrict_api) — a PHP-FPM/Apache restart via your host\'s control panel may be needed instead.',
+        ];
     }
 }
