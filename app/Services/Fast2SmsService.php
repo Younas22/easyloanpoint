@@ -11,10 +11,12 @@ use Throwable;
 /**
  * Thin wrapper around the Fast2SMS Quick SMS API (route=q).
  *
- * Docs: https://docs.fast2sms.com/reference/quick-sms-post
- *   POST https://www.fast2sms.com/dev/bulkV2
- *   Header: Authorization: <api key>
- *   Body:   route=q, message=<text>, numbers=<comma separated 10-digit numbers>
+ * Docs: https://docs.fast2sms.com/reference/quick-sms
+ *   GET https://www.fast2sms.com/dev/bulkV2
+ *   Header + query param "authorization": <api key> (sent both ways — some
+ *   accounts only honor the query parameter despite the header being the
+ *   documented contract)
+ *   Query: route=q, message=<text>, numbers=<comma separated 10-digit numbers>
  *
  * The API key is resolved from, in order: the "API Key" field on the
  * SMS / OTP tab of Admin → Settings (stored in the settings table as
@@ -47,17 +49,21 @@ class Fast2SmsService
         }
 
         try {
+            // authorization is sent BOTH as a header (per the documented
+            // contract) and as a query parameter (confirmed working against
+            // this account) — some Fast2SMS accounts/edge setups only honor
+            // one or the other.
             $response = Http::withHeaders([
                     'authorization' => $apiKey,
                 ])
-                ->asForm()
                 ->timeout(self::TIMEOUT_SECONDS)
-                ->post(self::ENDPOINT, [
-                    'route'    => 'q',
-                    'message'  => $message,
-                    'numbers'  => $phoneNumber,
-                    'language' => 'english',
-                    'flash'    => 0,
+                ->get(self::ENDPOINT, [
+                    'authorization' => $apiKey,
+                    'route'         => 'q',
+                    'message'       => $message,
+                    'numbers'       => $phoneNumber,
+                    'language'      => 'english',
+                    'flash'         => 0,
                 ]);
         } catch (Throwable $e) {
             Log::error('Fast2SMS: request failed.', [
