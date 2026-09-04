@@ -272,15 +272,10 @@ class OtpService
 
     private function messageFor(string $purpose, string $code): string
     {
-        // Kept deliberately short and plain — Fast2SMS's Quick ("q") route
-        // runs an automated spam filter, and longer promotional-sounding
-        // wording (e.g. "verification code", "expires in...", "do not
-        // share...") was getting flagged as spam_sms and silently rejected
-        // in production, even though the same route accepts short OTP-style
-        // text like "otp is: 123456" without issue.
-        return match ($purpose) {
-            'forgot_password' => "EasyLoanPoint reset OTP is: {$code}",
-            default            => "EasyLoanPoint OTP is: {$code}",
-        };
+        // Matches, as closely as possible, the exact wording confirmed to
+        // pass Fast2SMS's Quick ("q") route spam filter in production
+        // ("otp is: 090909") — a brand name prefix alone was enough to get
+        // "EasyLoanPoint OTP is: 123456" flagged as spam_sms and rejected.
+        return "otp is: {$code}";
     }
 }

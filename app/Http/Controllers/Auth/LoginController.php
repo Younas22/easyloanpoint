@@ -69,9 +69,9 @@ class LoginController extends Controller
     private function redirectByRole(): RedirectResponse
     {
         return match(Auth::user()->role) {
-            'admin' => redirect()->route('admin.dashboard'),
-            'hr'    => redirect()->route('hr.dashboard'),
-            default => redirect()->route('login'),
+            'admin', 'super_admin' => redirect()->route('admin.dashboard'),
+            'hr'                   => redirect()->route('hr.dashboard'),
+            default                => redirect()->route('login'),
         };
     }
 }
