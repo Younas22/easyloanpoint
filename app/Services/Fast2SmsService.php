@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Throwable;
 
 /**
@@ -68,9 +69,13 @@ class Fast2SmsService
         }
 
         if ($response->failed()) {
+            // The response body at this point is Fast2SMS's own error page/
+            // message (never our request), so it's safe to log in full —
+            // it's usually the clearest explanation of what went wrong.
             Log::error('Fast2SMS: HTTP error response.', [
                 'phone'  => $this->maskPhone($phoneNumber),
                 'status' => $response->status(),
+                'body'   => Str::limit($response->body(), 1000),
             ]);
 
             return false;
